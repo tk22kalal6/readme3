@@ -425,10 +425,19 @@ function escapeHtml(text) {
         
         // Use addEventListener instead of onclick attribute to avoid escaping issues
         openButton.addEventListener('click', function() {
+          // Pass the JSON file info so stream-player can load next lectures from the same JSON
+          const jsonFileInfo = {
+            jsonPath: 'test3/clinicalguruji.json', // Relative to 1234xx/ folder
+            platform: 'test3',
+            subject: 'clinicalguruji'
+          };
           openStreamPlayer(
             lecture.streamingUrl, 
             lecture.downloadUrl || lecture.streamingUrl, 
-            lecture.title
+            lecture.title,
+            null, // platform (will use jsonFileInfo instead)
+            null, // subject (will use jsonFileInfo instead)
+            jsonFileInfo
           );
         });
         
@@ -496,11 +505,6 @@ function escapeHtml(text) {
       console.log('DOM loaded, starting lecture load...');
       loadLectures();
     });
-    // Define page context for stream-player-utils.js
-    window.PAGE_CONTEXT = {
-      platform: 'test3',  // Platform name from folder structure
-      subject: 'clinicalguruji'  // Subject name from JSON file
-    };
   </script>
 <script src="../../stream-player-utils.js"></script>
 </body>
