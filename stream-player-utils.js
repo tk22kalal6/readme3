@@ -4,8 +4,35 @@
  * that redirects to the new stream-player.html with reCAPTCHA verification
  */
 
+// Function to extract platform and subject from current page URL and context
+function extractPageContext() {
+    // Try to extract from URL path
+    const currentPath = window.location.pathname;
+    const pathParts = currentPath.split('/').filter(p => p && !p.includes('.html'));
+    
+    let platform = '';
+    let subject = '';
+    
+    // Check if there's a global variable defined on the page
+    if (window.PAGE_CONTEXT) {
+        platform = window.PAGE_CONTEXT.platform || '';
+        subject = window.PAGE_CONTEXT.subject || '';
+    }
+    
+    // Try to extract from path: 1234xx/platform/subject.html or 1234xx/platform/subfolder/subject.html
+    if (!platform && !subject && pathParts.length >= 2 && pathParts[0] === '1234xx') {
+        platform = pathParts[1]; // e.g., 'marrow', 'dams', 'test3'
+        
+        // Get subject from filename or last path part
+        const fileName = currentPath.split('/').pop().replace('.html', '');
+        subject = fileName;
+    }
+    
+    return { platform, subject };
+}
+
 // Function to open the stream player with reCAPTCHA verification
-function openStreamPlayer(streamUrl, downloadUrl, title) {
+function openStreamPlayer(streamUrl, downloadUrl, title, platform, subject) {
     if (!streamUrl) {
         alert('Stream URL not available');
         return;
@@ -14,6 +41,13 @@ function openStreamPlayer(streamUrl, downloadUrl, title) {
     // Sanitize and encode the title properly to handle special characters
     // Remove any potentially problematic characters and ensure proper encoding
     const sanitizedTitle = (title || 'Lecture Video').trim();
+    
+    // Extract platform and subject from page context if not provided
+    if (!platform || !subject) {
+        const context = extractPageContext();
+        platform = platform || context.platform;
+        subject = subject || context.subject;
+    }
     
     // Build the URL with parameters - URLSearchParams automatically encodes special characters
     const params = new URLSearchParams({
@@ -24,6 +58,14 @@ function openStreamPlayer(streamUrl, downloadUrl, title) {
     // Add download URL if available
     if (downloadUrl) {
         params.append('download', downloadUrl);
+    }
+    
+    // Add platform and subject if available (needed for "next lectures" feature)
+    if (platform) {
+        params.append('platform', platform);
+    }
+    if (subject) {
+        params.append('subject', subject);
     }
 
     // Open in the same window/tab
