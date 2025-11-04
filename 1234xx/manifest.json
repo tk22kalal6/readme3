@@ -1,14 +1,316 @@
-[{"platform":"prepladder6","subfolder":"non","files":["p6anatomy.json","p6anesthesia.json","p6biochemistry.json","p6dermatology.json","p6ent.json","p6fmt.json","p6medicine.json","p6microbiology.json","p6obgy.json","p6ophthalmology.json","p6orthopaedics.json","p6pathology.json","p6pediatrics.json","p6pharmacology.json","p6physiology.json","p6psm.json","p6psychiatry.json","p6radiology.json","p6surgery.json"]},
-  {"platform":"marrow","subfolder":"non","files":["manatomy.json","mmedicine.json"]},
-  {"platform":"cerebellum","subfolder":"non","files":["cbanatomy.json","cbanesthesia.json","cbpediatrics.json","cbpharmacology.json","cbradiology.json"]},
-  {"platform":"dams","subfolder":"damsb2beng","files":["anatomy dr sandeep.json","anesthesia.json","biochemsitry dr sonam.json","derma.json","ent dr deepak arrora.json","fmt dr mohit.json","medicine dr archin.json","medicine dr arvind.json","medicine dr bharat.json","medicine dr rahul.json","medicine dr shrinath.json","micro dr suria.json","obgy dr deepti.json","ophth dr sourab.json","ophthalm dr manish.json","optho dr tushar.json","patho dr gourav.json","patho dr sanjeev.json","patho dr shagun.json","pedia dr sidharth.json","pediatric dr manoj.json","pharma dr j thiru.json","pharmacology dr dinesh.json","physiology dr kamal.json","psm dr kashish.json","psm dr sidharth.json","psych.json","radio.json","surgery deepak.json","surgery dr dhruv.json","surgery dr gaurav.json","surgery dr kenny.json","surgery dr rajeev.json","surgery dr sujoy.json"]},
-  {"platform":"dams","subfolder":"damsb2bhinglish","files":["dhanatomy.json","dhanesthesia.json","dhdermatology.json","dhfmt.json","dhgyne.json","dhmedicine1.json","dhmedicinep2.json","dhobs.json","dhophthalmology.json","dhpathology.json","dhpediatrics.json","dhpediatrics2.json","dhpharma.json","dhpsm.json","dhpsychiatry.json","dhradiology.json","dhsurgery.json"]},
-  {"platform":"dams","subfolder":"damsultlive","files":["dulanaesthesia.json","dulanatomy.json","dulbiochemistry.json","duldermatology.json","dulent.json","dulfmt.json","dulmedicine.json","dulmicrobiology.json","dulobgy.json","dulophthalmology.json","dulorthopedics.json","dulpathology.json","dulpediatrics.json","dulpharmacology.json","dulphsyiology.json","dulpsm.json","dulpsychiatry.json","dulradiology.json","dulsurgery.json"]},
-  {"platform":"e-gurukul","subfolder":"non","files":["eganatomy.json","eganesthesia.json","egbiochemistry.json","egdermatology.json","egent.json","egfmt.json","eghdermatology.json","eghpsychiatry.json","egmedicinemukesh.json","egmedicinethameem.json","egmicrobiology.json","egophthalmology.json","egorthopaedics.json","egpathology.json","egpediatrics.json","egpharmacology.json","egphysiology.json","egpsm.json","egpsychiatry.json","egradiology.json","egsurgery.json","obgy.json"]},
-  {"platform":"ma00xrow","subfolder":"non","files":["manaesthesia.json","mbiochemistry.json","mclinicals.json","mdermatology.json","ment.json","mfmt.json","mobgy.json","mophthalmology.json","morthopaedics.json","mpathology.json","mpediatrics.json","mpschiatry.json","mpsm.json","mradiology.json","msurgery.json"]},
-  {"platform":"physics-wala","subfolder":"non","files":["pwanatomy.json","pwanesthesia.json","pwbiochemistry.json","pwdermatology.json","pwent.json","pwent2.json","pwfmt.json","pwmedicine.json","pwmicrobiology1.json","pwmicrobiologyanusharathi.json","pwobgy.json","pwophthalmology.json","pworthopedics.json","pwpathology.json","pwpediatrics.json","pwpharmacologyankit.json","pwpharmacologysiraj.json","pwphysiology.json","pwpsm.json","pwpsmashwaniranjan.json","pwpsychiatry.json","pwradiology.json","pwradiology2.json","pwsurgery.json"]},
-  {"platform":"prepladder5","subfolder":"non","files":["p5anatomy.json","p5anesthesia.json","p5biochemistry.json","p5clinicals.json","p5dermatology.json","p5ent.json","p5fmt.json","p5microbiology.json","p5obgy.json","p5ophthalmology.json","p5orthopedics.json","p5pathology.json","p5pediatrics.json","p5pharmacology.json","p5physiology.json","p5pschiatry.json","p5psm.json","p5radiology.json","p5rapidrevision.json","p5surgery.json"]},
-  {"platform":"prepladder6x","subfolder":"non","files":["p6xHrapidrevision.json","p6xanaesthesia.json","p6xbiochemistry.json","p6xdermatology.json","p6xent.json","p6xfmt.json","p6xllr.json","p6xmedicine.json","p6xmicrobiology.json","p6xobgy.json","p6xophthalmology.json","p6xorthopedics.json","p6xpathology.json","p6xpharmacology.json","p6xphysiology.json","p6xpsm.json","p6xrErapidrevision.json","p6xsurgery.json","pxpediatrics.json","pxpsychiatry.json","pxradiology.json"]},
-  {"platform":"test","subfolder":"non","files":["Anatomy.json","clinicalguruji.json"]},
-  {"platform":"test2","subfolder":"non","files":["clinicalguruji.json"]},
-  {"platform":"test3","subfolder":"non","files":["clinicalguruji.json"]}]
+[
+  {
+    "platform": "cerebellum",
+    "subfolder": "non",
+    "files": [
+      "cbanatomy.json",
+      "cbanesthesia.json",
+      "cbmedicine.json",
+      "cbpharmacology.json",
+      "cbradiology.json"
+    ]
+  },
+  {
+    "platform": "dams",
+    "subfolder": "damsb2benglish",
+    "files": [
+      "deanasthesia.json",
+      "deanatomysandeep.json",
+      "debiochemistrysonam.json",
+      "dedermatology.json",
+      "deentdeepak.json",
+      "defmtmohit.json",
+      "demedicineachin.json",
+      "demedicinearvind.json",
+      "demedicinebharat.json",
+      "demedicinerahul.json",
+      "demedicineshrinath.json",
+      "demicrobiologysurya.json",
+      "deobgyanil.json",
+      "deobgydeepti.json",
+      "deopthalmologysourab.json",
+      "deorthopedicstushar.json",
+      "depathologygourav.json",
+      "depathologysanjeev.json",
+      "depathologyshagun.json",
+      "depediatricsmanoj.json",
+      "depediatricssidharth.json",
+      "depharmacologydinesg.json",
+      "depharmacologythiru.json",
+      "dephysiologykamal.json",
+      "depschiatry.json",
+      "depsmkashish.json",
+      "depsmsidharth.json",
+      "deradiology.json",
+      "desurgerydeepak.json",
+      "desurgerydhruv.json",
+      "desurgerygaurav.json",
+      "desurgerykenny.json",
+      "desurgeryrajeev.json",
+      "desurgerysujoy.json"
+    ]
+  },
+  {
+    "platform": "dams",
+    "subfolder": "damsb2bhinglish",
+    "files": [
+      "dhanatomy.json",
+      "dhanesthesia.json",
+      "dhdermatology.json",
+      "dhfmt.json",
+      "dhmedicine.json",
+      "dhmedicine2.json",
+      "dhobgy.json",
+      "dhopthalmology.json",
+      "dhpathology.json",
+      "dhpediatrics.json",
+      "dhpediatrics2.json",
+      "dhpharmacology.json",
+      "dhpschiatry.json",
+      "dhpsm.json",
+      "dhradiology.json",
+      "dhsurgery.json"
+    ]
+  },
+  {
+    "platform": "dams",
+    "subfolder": "damsultlive",
+    "files": [
+      "duanatomy.json",
+      "duanesthesia.json",
+      "dubiochemistry.json",
+      "dudermatology.json",
+      "duent.json",
+      "dufmt.json",
+      "dumedicine.json",
+      "dumicrobiology.json",
+      "duobgy.json",
+      "duophthalmology.json",
+      "duorthopedics.json",
+      "dupathology.json",
+      "dupediatrics.json",
+      "dupharmacology.json",
+      "duphysiology.json",
+      "dupsm.json",
+      "dupsychiatry.json",
+      "duradiology.json",
+      "dusurgery.json"
+    ]
+  },
+  {
+    "platform": "doctut",
+    "subfolder": "non",
+    "files": [
+      "docanatomy.json",
+      "docanesthesia.json",
+      "docbiochemistry.json",
+      "docdermatology.json",
+      "docent.json",
+      "docfmt.json",
+      "docmedicine.json",
+      "docmicrobiology.json",
+      "docobsgyne.json",
+      "docophthalmology.json",
+      "docorthopedics.json",
+      "docpathology.json",
+      "docpediatrics.json",
+      "docpharmacology.json",
+      "docphysiology.json",
+      "docpsm.json",
+      "docpsychiatry.json",
+      "docradiology.json",
+      "docsurgery.json",
+      "doctnd.json"
+    ]
+  },
+  {
+    "platform": "e-gurukul",
+    "subfolder": "non",
+    "files": [
+      "eganatomy.json",
+      "eganesthesia.json",
+      "egbiochemistry.json",
+      "egdermatology.json",
+      "egent.json",
+      "egfmt.json",
+      "egmedicine.json",
+      "egmedicinebhatia.json",
+      "egmedicinethameem.json",
+      "egmicrobiology.json",
+      "egobgy.json",
+      "egorthopaedics.json",
+      "egpathology.json",
+      "egpediatrics.json",
+      "egpharmacology.json",
+      "egphysiology.json",
+      "egpsm.json",
+      "egpsychiatry.json",
+      "egradiology.json",
+      "egsurgery.json"
+    ]
+  },
+  {
+    "platform": "marrow",
+    "subfolder": "non",
+    "files": [
+      "manatomy.json",
+      "mmedicine.json"
+    ]
+  },
+  {
+    "platform": "marrow6",
+    "subfolder": "non",
+    "files": [
+      "manesthesia.json",
+      "mbiochemistry.json",
+      "mdermatology.json",
+      "ment.json",
+      "mfmt.json",
+      "mobgy.json",
+      "mopthalmology.json",
+      "morthopedics.json",
+      "mpathology.json",
+      "mpediatrics.json",
+      "mpsm.json",
+      "mpsychiatry.json",
+      "mradiology.json",
+      "mrecentupdates.json",
+      "msurgery.json"
+    ]
+  },
+  {
+    "platform": "mist",
+    "subfolder": "non",
+    "files": [
+      "mianatomy.json",
+      "mibiochemistry.json",
+      "midermatology.json",
+      "mient.json",
+      "mifmt.json",
+      "mimedicine.json",
+      "mimicrobiology.json",
+      "miobgy.json",
+      "miopthalmology.json",
+      "miorthopedics.json",
+      "mipathology.json",
+      "mipediatrics.json",
+      "mipharmacology.json",
+      "miphysiology.json",
+      "mipsm.json",
+      "mipsychiatry.json",
+      "miradiology.json",
+      "misurgery.json"
+    ]
+  },
+  {
+    "platform": "physicswala",
+    "subfolder": "non",
+    "files": [
+      "pwanatomy.json",
+      "pwanatomy2.json",
+      "pwanesthesia.json",
+      "pwbiochemistry.json",
+      "pwdermatology.json",
+      "pwent.json",
+      "pwfmt.json",
+      "pwmedicine.json",
+      "pwmicrobiology1.json",
+      "pwmicrobiology2.json",
+      "pwobgy.json",
+      "pworthopedics.json",
+      "pwpaediatrics.json",
+      "pwpathology.json",
+      "pwpharmacology.json",
+      "pwpharmacology2.json",
+      "pwphysiology.json",
+      "pwpsm.json",
+      "pwpsychiatry.json",
+      "pwpsychiatry2.json",
+      "pwradiology.json",
+      "pwsurgery.json"
+    ]
+  },
+  {
+    "platform": "prepladder6",
+    "subfolder": "non",
+    "files": [
+      "p6anatomy.json",
+      "p6anesthesia.json",
+      "p6biochemistry.json",
+      "p6dermatology.json",
+      "p6ent.json",
+      "p6fmt.json",
+      "p6medicine.json",
+      "p6microbiology.json",
+      "p6obgy.json",
+      "p6opthalmology.json",
+      "p6orthopedics.json",
+      "p6pathology.json",
+      "p6pediatrics.json",
+      "p6pharmacology.json",
+      "p6physiology.json",
+      "p6pschiatry.json",
+      "p6psm.json",
+      "p6radiology.json",
+      "p6surgery.json"
+    ]
+  },
+  {
+    "platform": "prepladder6x",
+    "subfolder": "non",
+    "files": [
+      "p6xErapidrevision.json",
+      "p6xHrapidrevision.json",
+      "p6xLMM.json",
+      "p6xanesthesia.json",
+      "p6xbiochemistry.json",
+      "p6xdermatology.json",
+      "p6xent.json",
+      "p6xfmt.json",
+      "p6xmedicine.json",
+      "p6xmicrobiology.json",
+      "p6xobgy.json",
+      "p6xopthalmology.json",
+      "p6xorthopedics.json",
+      "p6xpathology.json",
+      "p6xpediatrics.json",
+      "p6xpharmacology.json",
+      "p6xphysiology.json",
+      "p6xpschiatry.json",
+      "p6xpsm.json",
+      "p6xpsychiatry.json",
+      "p6xradiology.json",
+      "p6xsurgery.json"
+    ]
+  },
+  {
+    "platform": "specific",
+    "subfolder": "non",
+    "files": [
+      "clinicalguruji.json",
+      "priyanshjainmedicine.json"
+    ]
+  },
+  {
+    "platform": "test",
+    "subfolder": "non",
+    "files": [
+      "Anatomy.json",
+      "clinicalguruji.json"
+    ]
+  },
+  {
+    "platform": "test2",
+    "subfolder": "non",
+    "files": [
+      "clinicalguruji.json"
+    ]
+  },
+  {
+    "platform": "test3",
+    "subfolder": "non",
+    "files": [
+      "clinicalguruji.json"
+    ]
+  }
+]
