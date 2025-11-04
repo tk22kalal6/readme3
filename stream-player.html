@@ -677,7 +677,23 @@
 
             } catch (error) {
                 console.error('Error loading next lectures:', error);
-                container.innerHTML = '<div class="no-more-lectures">Could not load next lectures</div>';
+                console.error('Debug info:', {
+                    subjectName,
+                    platformName,
+                    videoTitle,
+                    currentPath: window.location.pathname,
+                    error: error.message
+                });
+                container.innerHTML = `
+                    <div class="no-more-lectures">
+                        Could not load next lectures<br>
+                        <small style="opacity: 0.7;">
+                            ${error.message || 'Unknown error'}<br>
+                            Platform: ${platformName || 'not set'}<br>
+                            Subject: ${subjectName || 'not set'}
+                        </small>
+                    </div>
+                `;
             }
         }
 
