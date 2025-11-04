@@ -98,7 +98,14 @@
         );
         
         // Add to beginning
-        lastWatched.unshift(lecture);
+        lastWatched.unshift({
+          title: lecture.title,
+          subject: lecture.subject,
+          platform: lecture.platform,
+          streamingUrl: lecture.streamingUrl,
+          thumbnailUrl: lecture.thumbnailUrl,
+          duration: lecture.duration
+        });
         
         // Keep only last 20 items
         lastWatched = lastWatched.slice(0, 20);
@@ -243,8 +250,8 @@
       document.getElementById('lastWatchedSection').style.display = 'block';
       container.innerHTML = '';
       
-      // Show first 4 items
-      lastWatched.slice(0, 4).forEach(lecture => {
+      // Show only last 3 watched items
+      lastWatched.slice(0, 3).forEach(lecture => {
         container.appendChild(createVideoCard(lecture));
       });
     }
@@ -327,16 +334,56 @@
 
     function showSuggestions(query) {
       const lowerQuery = query.toLowerCase();
+      const words = lowerQuery.split(/\s+/).filter(w => w.length > 0);
       
-      // Get unique matching titles
-      const matchingTitles = new Set();
+      // Get matching titles with scores
+      const titleMatches = new Map();
+      
       allLectures.forEach(lecture => {
-        if (lecture.title.toLowerCase().includes(lowerQuery)) {
-          matchingTitles.add(lecture.title);
+        const titleLower = lecture.title.toLowerCase();
+        const subjectLower = lecture.subject.toLowerCase();
+        
+        // Calculate relevance score
+        let score = 0;
+        
+        // Exact title match - highest score
+        if (titleLower === lowerQuery) {
+          score = 1000;
+        }
+        // Title starts with query
+        else if (titleLower.startsWith(lowerQuery)) {
+          score = 500;
+        }
+        // Title contains complete query
+        else if (titleLower.includes(lowerQuery)) {
+          score = 100;
+        }
+        // All words present in title
+        else if (words.every(word => titleLower.includes(word) || subjectLower.includes(word))) {
+          score = 50;
+        }
+        // Some words present
+        else {
+          const matchingWords = words.filter(word => 
+            titleLower.includes(word) || subjectLower.includes(word)
+          ).length;
+          if (matchingWords > 0) {
+            score = matchingWords * 10;
+          }
+        }
+        
+        if (score > 0) {
+          if (!titleMatches.has(lecture.title) || titleMatches.get(lecture.title) < score) {
+            titleMatches.set(lecture.title, score);
+          }
         }
       });
       
-      const suggestions = Array.from(matchingTitles).slice(0, 10);
+      // Sort by score and get top suggestions
+      const suggestions = Array.from(titleMatches.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 15)
+        .map(([title]) => title);
       
       if (suggestions.length === 0) {
         suggestionsDropdown.classList.remove('active');
@@ -361,11 +408,57 @@
 
     function performSearch(query) {
       const lowerQuery = query.toLowerCase();
-      const results = allLectures.filter(lecture =>
-        lecture.title.toLowerCase().includes(lowerQuery) ||
-        lecture.subject.toLowerCase().includes(lowerQuery) ||
-        lecture.platform.toLowerCase().includes(lowerQuery)
-      );
+      const words = lowerQuery.split(/\s+/).filter(w => w.length > 0);
+      
+      // Find all matching lectures with relevance scores
+      const results = allLectures.map(lecture => {
+        const titleLower = lecture.title.toLowerCase();
+        const subjectLower = lecture.subject.toLowerCase();
+        const platformLower = lecture.platform.toLowerCase();
+        
+        let score = 0;
+        
+        // Perfect title match
+        if (titleLower === lowerQuery) {
+          score = 1000;
+        }
+        // Title starts with query
+        else if (titleLower.startsWith(lowerQuery)) {
+          score = 500;
+        }
+        // Title contains full query
+        else if (titleLower.includes(lowerQuery)) {
+          score = 100;
+        }
+        // Subject exact match
+        else if (subjectLower === lowerQuery) {
+          score = 80;
+        }
+        // Subject contains query
+        else if (subjectLower.includes(lowerQuery)) {
+          score = 60;
+        }
+        // Platform match
+        else if (platformLower.includes(lowerQuery)) {
+          score = 40;
+        }
+        // Multi-word matching
+        else if (words.length > 1) {
+          const matchingWords = words.filter(word => 
+            titleLower.includes(word) || subjectLower.includes(word)
+          ).length;
+          if (matchingWords === words.length) {
+            score = 50; // All words present
+          } else if (matchingWords > 0) {
+            score = matchingWords * 10; // Some words present
+          }
+        }
+        
+        return { lecture, score };
+      })
+      .filter(item => item.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .map(item => item.lecture);
       
       displaySearchResults(results);
     }
