@@ -42,7 +42,7 @@
           autocomplete="off"
           data-testid="input-search"
         >
-        <i class="fas fa-search search-icon"></i>
+        <i class="fas fa-search search-icon" id="searchIcon" data-testid="button-search" style="cursor: pointer;"></i>
         <div class="suggestions-dropdown" id="suggestionsDropdown"></div>
       </div>
 
@@ -105,7 +105,7 @@
       }
     };
 
-    // Load lecture data from 1234xx folder
+    // Load lecture data from 1234xx folder with progressive rendering
     async function loadLectureData() {
       try {
         const manifestResponse = await fetch('1234xx/manifest.json');
@@ -116,6 +116,10 @@
         
         const manifest = await manifestResponse.json();
         
+        // Hide loading state immediately and show platform container
+        document.getElementById('loadingState').style.display = 'none';
+        
+        // Load platforms progressively
         for (const platformConfig of manifest) {
           const { platform: originalPlatform, subfolder, files } = platformConfig;
           
@@ -126,7 +130,8 @@
             platformLectures[platformDisplay] = {};
           }
           
-          for (const jsonFile of files) {
+          // Load files for this platform asynchronously
+          const filePromises = files.map(async (jsonFile) => {
             try {
               const filePath = subfolder === 'non' 
                 ? `1234xx/${originalPlatform}/${jsonFile}` 
@@ -138,12 +143,27 @@
                 if (data.lectures && Array.isArray(data.lectures)) {
                   const subjectName = data.subjectName || jsonFile.replace('.json', '');
                   
-                  if (!platformLectures[platformDisplay][subjectName]) {
-                    platformLectures[platformDisplay][subjectName] = [];
-                  }
+                  // Pick a random lecture from this subject for display
+                  const randomIndex = Math.floor(Math.random() * data.lectures.length);
+                  const randomLecture = data.lectures[randomIndex];
                   
+                  const lectureData = {
+                    title: randomLecture.title,
+                    subject: subjectName,
+                    platform: platformDisplay,
+                    streamingUrl: randomLecture.streamingUrl || randomLecture.streamUrl || '',
+                    downloadUrl: randomLecture.downloadUrl || '',
+                    thumbnailUrl: randomLecture.thumbnailUrl || getDefaultThumbnail(),
+                    duration: randomLecture.duration || 'N/A',
+                    folderPath: `1234xx/${originalPlatform}/${subfolder !== 'non' ? subfolder + '/' : ''}`
+                  };
+                  
+                  // Store only one random lecture per subject for platform display
+                  platformLectures[platformDisplay][subjectName] = lectureData;
+                  
+                  // Add all lectures to search index in background
                   data.lectures.forEach(lecture => {
-                    const lectureData = {
+                    allLectures.push({
                       title: lecture.title,
                       subject: subjectName,
                       platform: platformDisplay,
@@ -152,25 +172,24 @@
                       thumbnailUrl: lecture.thumbnailUrl || getDefaultThumbnail(),
                       duration: lecture.duration || 'N/A',
                       folderPath: `1234xx/${originalPlatform}/${subfolder !== 'non' ? subfolder + '/' : ''}`
-                    };
-                    
-                    allLectures.push(lectureData);
-                    platformLectures[platformDisplay][subjectName].push(lectureData);
+                    });
                   });
                 }
               }
             } catch (error) {
               console.log(`Could not load ${filePath}:`, error);
             }
-          }
+          });
+          
+          // Wait for this platform's files to load
+          await Promise.all(filePromises);
+          
+          // Render this platform immediately
+          renderPlatformSection(platformDisplay);
         }
         
         console.log('Total lectures loaded:', allLectures.length);
-        console.log('Platforms:', Object.keys(platformLectures));
-        
-        // Initialize UI - Show platform sections directly for fast loading
-        document.getElementById('loadingState').style.display = 'none';
-        renderPlatformSections();
+        console.log('Platforms displayed:', Object.keys(platformLectures));
       } catch (error) {
         console.error('Error loading lecture data:', error);
         document.getElementById('loadingState').innerHTML = '<p class="no-results">Error loading lecture data</p>';
@@ -227,38 +246,44 @@
       return card;
     }
 
-    // Render Platform Sections
+    // Render a single platform section (called progressively)
+    function renderPlatformSection(platform) {
+      const subjects = platformLectures[platform];
+      const lectures = [];
+      
+      // Get the random lecture from each subject
+      Object.keys(subjects).forEach(subject => {
+        const lecture = subjects[subject];
+        if (lecture) {
+          lectures.push(lecture);
+        }
+      });
+      
+      if (lectures.length === 0) return;
+      
+      const container = document.getElementById('platformSections');
+      const section = document.createElement('div');
+      section.className = 'carousel-container';
+      section.innerHTML = `
+        <h2 class="section-heading" data-testid="text-platform-${platform.replace(/[^a-z0-9]/gi, '-').toLowerCase()}">${platform} Lectures</h2>
+        <div class="carousel" data-testid="carousel-${platform.replace(/[^a-z0-9]/gi, '-').toLowerCase()}"></div>
+      `;
+      
+      const carousel = section.querySelector('.carousel');
+      lectures.forEach(lecture => {
+        carousel.appendChild(createVideoCard(lecture));
+      });
+      
+      container.appendChild(section);
+    }
+    
+    // Render all platform sections (for compatibility)
     function renderPlatformSections() {
       const container = document.getElementById('platformSections');
       container.innerHTML = '';
       
       Object.keys(platformLectures).forEach(platform => {
-        const subjects = platformLectures[platform];
-        const firstLectures = [];
-        
-        // Get first lecture from each subject (much faster than random)
-        Object.keys(subjects).forEach(subject => {
-          const lectures = subjects[subject];
-          if (lectures.length > 0) {
-            firstLectures.push(lectures[0]);
-          }
-        });
-        
-        if (firstLectures.length === 0) return;
-        
-        const section = document.createElement('div');
-        section.className = 'carousel-container';
-        section.innerHTML = `
-          <h2 class="section-heading" data-testid="text-platform-${platform.replace(/[^a-z0-9]/gi, '-').toLowerCase()}">${platform} Lectures</h2>
-          <div class="carousel" data-testid="carousel-${platform.replace(/[^a-z0-9]/gi, '-').toLowerCase()}"></div>
-        `;
-        
-        const carousel = section.querySelector('.carousel');
-        firstLectures.forEach(lecture => {
-          carousel.appendChild(createVideoCard(lecture));
-        });
-        
-        container.appendChild(section);
+        renderPlatformSection(platform);
       });
     }
 
@@ -503,6 +528,19 @@
       
       window.location.href = `stream-player.html?${params.toString()}`;
     }
+
+    // Make search icon clickable
+    document.getElementById('searchIcon').addEventListener('click', function() {
+      const query = searchInput.value.trim();
+      suggestionsDropdown.classList.remove('active');
+      if (query.length >= 2) {
+        performSearch(query);
+      } else if (query.length === 0) {
+        // If empty, show all platforms
+        searchResultsSection.style.display = 'none';
+        document.getElementById('platformSections').style.display = 'block';
+      }
+    });
 
     // Initialize data on page load
     document.addEventListener('DOMContentLoaded', function() {
