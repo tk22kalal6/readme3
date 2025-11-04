@@ -263,18 +263,17 @@
       
       Object.keys(platformLectures).forEach(platform => {
         const subjects = platformLectures[platform];
-        const randomLectures = [];
+        const firstLectures = [];
         
-        // Get one random lecture from each subject
+        // Get first lecture from each subject (much faster than random)
         Object.keys(subjects).forEach(subject => {
           const lectures = subjects[subject];
           if (lectures.length > 0) {
-            const randomIndex = Math.floor(Math.random() * lectures.length);
-            randomLectures.push(lectures[randomIndex]);
+            firstLectures.push(lectures[0]);
           }
         });
         
-        if (randomLectures.length === 0) return;
+        if (firstLectures.length === 0) return;
         
         const section = document.createElement('div');
         section.className = 'carousel-container';
@@ -284,7 +283,7 @@
         `;
         
         const carousel = section.querySelector('.carousel');
-        randomLectures.forEach(lecture => {
+        firstLectures.forEach(lecture => {
           carousel.appendChild(createVideoCard(lecture));
         });
         
@@ -335,6 +334,7 @@
     function showSuggestions(query) {
       const lowerQuery = query.toLowerCase();
       const words = lowerQuery.split(/\s+/).filter(w => w.length > 0);
+      const firstWord = words[0] || '';
       
       // Get matching titles with scores
       const titleMatches = new Map();
@@ -348,17 +348,33 @@
         
         // Exact title match - highest score
         if (titleLower === lowerQuery) {
+          score = 10000;
+        }
+        // Title starts with query - very high priority
+        else if (titleLower.startsWith(lowerQuery)) {
+          score = 5000;
+        }
+        // Subject starts with query
+        else if (subjectLower.startsWith(lowerQuery)) {
+          score = 2500;
+        }
+        // Title starts with first word (e.g., "g" matches "gastro...")
+        else if (titleLower.startsWith(firstWord)) {
           score = 1000;
         }
-        // Title starts with query
-        else if (titleLower.startsWith(lowerQuery)) {
-          score = 500;
+        // Subject starts with first word
+        else if (subjectLower.startsWith(firstWord)) {
+          score = 800;
         }
         // Title contains complete query
         else if (titleLower.includes(lowerQuery)) {
           score = 100;
         }
-        // All words present in title
+        // Subject contains complete query
+        else if (subjectLower.includes(lowerQuery)) {
+          score = 80;
+        }
+        // All words present
         else if (words.every(word => titleLower.includes(word) || subjectLower.includes(word))) {
           score = 50;
         }
@@ -409,6 +425,7 @@
     function performSearch(query) {
       const lowerQuery = query.toLowerCase();
       const words = lowerQuery.split(/\s+/).filter(w => w.length > 0);
+      const firstWord = words[0] || '';
       
       // Find all matching lectures with relevance scores
       const results = allLectures.map(lecture => {
@@ -420,23 +437,31 @@
         
         // Perfect title match
         if (titleLower === lowerQuery) {
+          score = 10000;
+        }
+        // Title starts with query - highest priority
+        else if (titleLower.startsWith(lowerQuery)) {
+          score = 5000;
+        }
+        // Subject exact match
+        else if (subjectLower === lowerQuery) {
+          score = 2500;
+        }
+        // Title starts with first word (e.g., "g" matches "gastro...")
+        else if (titleLower.startsWith(firstWord)) {
           score = 1000;
         }
-        // Title starts with query
-        else if (titleLower.startsWith(lowerQuery)) {
-          score = 500;
+        // Subject starts with first word
+        else if (subjectLower.startsWith(firstWord)) {
+          score = 800;
         }
         // Title contains full query
         else if (titleLower.includes(lowerQuery)) {
           score = 100;
         }
-        // Subject exact match
-        else if (subjectLower === lowerQuery) {
-          score = 80;
-        }
         // Subject contains query
         else if (subjectLower.includes(lowerQuery)) {
-          score = 60;
+          score = 80;
         }
         // Platform match
         else if (platformLower.includes(lowerQuery)) {
