@@ -3,7 +3,7 @@
   max-width: 1400px;
   margin: 0 auto;
   padding: 20px;
-  background-color: #141414;
+  background-color: #f0f4f8;
   min-height: 100vh;
 }
 
@@ -17,16 +17,18 @@
   width: 100%;
   padding: 16px 50px 16px 20px;
   font-size: 16px;
-  border: 2px solid #333;
-  border-radius: 8px;
-  background-color: #1a1a1a;
-  color: #fff;
-  transition: border-color 0.3s;
+  border: 2px solid #cbd5e0;
+  border-radius: 12px;
+  background-color: white;
+  color: #2d3748;
+  transition: all 0.3s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .ott-search-bar:focus {
   outline: none;
-  border-color: #e50914;
+  border-color: #2c5282;
+  box-shadow: 0 4px 12px rgba(44, 82, 130, 0.15);
 }
 
 .search-icon {
@@ -34,7 +36,7 @@
   right: 20px;
   top: 50%;
   transform: translateY(-50%);
-  color: #666;
+  color: #718096;
 }
 
 /* Auto-suggestions */
@@ -43,14 +45,15 @@
   top: 100%;
   left: 0;
   right: 0;
-  background-color: #1a1a1a;
-  border: 2px solid #333;
+  background-color: white;
+  border: 2px solid #cbd5e0;
   border-top: none;
-  border-radius: 0 0 8px 8px;
+  border-radius: 0 0 12px 12px;
   max-height: 300px;
   overflow-y: auto;
   z-index: 1000;
   display: none;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
 }
 
 .suggestions-dropdown.active {
@@ -60,13 +63,14 @@
 .suggestion-item {
   padding: 12px 20px;
   cursor: pointer;
-  border-bottom: 1px solid #222;
+  border-bottom: 1px solid #e2e8f0;
   transition: background-color 0.2s;
-  color: #fff;
+  color: #2d3748;
+  font-size: 15px;
 }
 
 .suggestion-item:hover {
-  background-color: #333;
+  background-color: #edf2f7;
 }
 
 .suggestion-item:last-child {
@@ -77,9 +81,10 @@
 .section-heading {
   font-size: 24px;
   font-weight: 600;
-  color: #fff;
+  color: #2d3748;
   margin-bottom: 20px;
   padding-left: 10px;
+  border-left: 4px solid #2c5282;
 }
 
 /* Carousel Container */
@@ -94,7 +99,7 @@
   scroll-behavior: smooth;
   padding: 10px 0;
   scrollbar-width: thin;
-  scrollbar-color: #444 #1a1a1a;
+  scrollbar-color: #cbd5e0 #f0f4f8;
 }
 
 .carousel::-webkit-scrollbar {
@@ -102,39 +107,41 @@
 }
 
 .carousel::-webkit-scrollbar-track {
-  background: #1a1a1a;
+  background: #f0f4f8;
 }
 
 .carousel::-webkit-scrollbar-thumb {
-  background: #444;
+  background: #cbd5e0;
   border-radius: 4px;
 }
 
 .carousel::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: #a0aec0;
 }
 
 /* Video Card */
 .video-card {
   min-width: 280px;
   max-width: 280px;
-  background-color: #1a1a1a;
-  border-radius: 8px;
+  background-color: white;
+  border-radius: 12px;
   overflow: hidden;
   cursor: pointer;
   transition: transform 0.3s, box-shadow 0.3s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e2e8f0;
 }
 
 .video-card:hover {
-  transform: scale(1.05);
-  box-shadow: 0 8px 16px rgba(229, 9, 20, 0.4);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(44, 82, 130, 0.15);
 }
 
 .video-card-thumbnail {
   width: 100%;
   height: 157px;
   object-fit: cover;
-  background-color: #000;
+  background-color: #2c5282;
   display: block;
 }
 
@@ -145,7 +152,7 @@
 .video-card-title {
   font-size: 14px;
   font-weight: 600;
-  color: #fff;
+  color: #2d3748;
   margin-bottom: 8px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -159,7 +166,7 @@
   flex-direction: column;
   gap: 4px;
   font-size: 12px;
-  color: #999;
+  color: #718096;
 }
 
 .video-card-meta span {
@@ -171,6 +178,7 @@
 .video-card-meta i {
   font-size: 11px;
   width: 14px;
+  color: #2c5282;
 }
 
 /* Search Results Grid */
@@ -188,14 +196,17 @@
 
 .no-results {
   text-align: center;
-  color: #666;
+  color: #718096;
   font-size: 18px;
   padding: 60px 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .search-prompt {
   text-align: center;
-  color: #666;
+  color: #718096;
   font-size: 16px;
   padding: 40px 20px;
 }
@@ -203,8 +214,9 @@
 /* Loading State */
 .loading {
   text-align: center;
-  color: #666;
+  color: #718096;
   padding: 40px;
+  font-size: 18px;
 }
 
 /* Platform Badges */
@@ -215,7 +227,7 @@
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
-  background-color: #e50914;
+  background-color: #2c5282;
   color: #fff;
 }
 
@@ -277,13 +289,13 @@
   }
 }
 
-/* Dark Mode Adjustments */
+/* Light Mode (Default) */
 body {
-  background-color: #000;
-  color: #fff;
+  background-color: #f0f4f8;
+  color: #2d3748;
 }
 
 header {
-  background-color: #141414;
-  border-bottom: 1px solid #222;
+  background-color: #2c5282;
+  border-bottom: none;
 }
