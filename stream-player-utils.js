@@ -4,35 +4,45 @@
  * that redirects to the new stream-player.html with reCAPTCHA verification
  */
 
-// Function to extract platform and subject from current page URL and context
+// Function to extract platform path and subject from current page URL and context
+// Returns: { platformPath: 'dams/damsb2benglish', subject: 'anatomy' }
+// This allows handling nested subfolders like 1234xx/dams/damsb2benglish/anatomy.html
 function extractPageContext() {
-    // Try to extract from URL path
-    const currentPath = window.location.pathname;
-    const pathParts = currentPath.split('/').filter(p => p && !p.includes('.html'));
-    
-    let platform = '';
+    let platformPath = '';
     let subject = '';
     
-    // Check if there's a global variable defined on the page
+    // Method 1: Check if there's a global variable defined on the page (optional)
     if (window.PAGE_CONTEXT) {
-        platform = window.PAGE_CONTEXT.platform || '';
+        platformPath = window.PAGE_CONTEXT.platformPath || window.PAGE_CONTEXT.platform || '';
         subject = window.PAGE_CONTEXT.subject || '';
+        if (platformPath && subject) return { platformPath, subject };
     }
     
-    // Try to extract from path: 1234xx/platform/subject.html or 1234xx/platform/subfolder/subject.html
-    if (!platform && !subject && pathParts.length >= 2 && pathParts[0] === '1234xx') {
-        platform = pathParts[1]; // e.g., 'marrow', 'dams', 'test3'
+    // Method 2: Extract from current URL path
+    const currentPath = window.location.pathname;
+    
+    // Find the position of '1234xx/' in the path
+    const match = currentPath.match(/1234xx\/(.+)\.html$/);
+    if (match) {
+        const fullPath = match[1]; // e.g., 'dams/damsb2benglish/anatomy'
+        const pathParts = fullPath.split('/');
         
-        // Get subject from filename or last path part
-        const fileName = currentPath.split('/').pop().replace('.html', '');
-        subject = fileName;
+        // Last part is the subject (filename without .html)
+        subject = pathParts[pathParts.length - 1];
+        
+        // Everything before the last part is the platform path (can include subfolders)
+        // e.g., 'dams/damsb2benglish' or just 'test3'
+        platformPath = pathParts.slice(0, -1).join('/');
+        
+        if (platformPath && subject) return { platformPath, subject };
     }
     
-    return { platform, subject };
+    return { platformPath, subject };
 }
 
 // Function to open the stream player with reCAPTCHA verification
-function openStreamPlayer(streamUrl, downloadUrl, title, platform, subject) {
+// jsonFileInfo is an optional object: { jsonPath: 'test3/clinicalguruji.json', platform: 'test3', subject: 'clinicalguruji' }
+function openStreamPlayer(streamUrl, downloadUrl, title, platform, subject, jsonFileInfo) {
     if (!streamUrl) {
         alert('Stream URL not available');
         return;
@@ -41,13 +51,6 @@ function openStreamPlayer(streamUrl, downloadUrl, title, platform, subject) {
     // Sanitize and encode the title properly to handle special characters
     // Remove any potentially problematic characters and ensure proper encoding
     const sanitizedTitle = (title || 'Lecture Video').trim();
-    
-    // Extract platform and subject from page context if not provided
-    if (!platform || !subject) {
-        const context = extractPageContext();
-        platform = platform || context.platform;
-        subject = subject || context.subject;
-    }
     
     // Build the URL with parameters - URLSearchParams automatically encodes special characters
     const params = new URLSearchParams({
@@ -60,12 +63,27 @@ function openStreamPlayer(streamUrl, downloadUrl, title, platform, subject) {
         params.append('download', downloadUrl);
     }
     
-    // Add platform and subject if available (needed for "next lectures" feature)
-    if (platform) {
-        params.append('platform', platform);
-    }
-    if (subject) {
-        params.append('subject', subject);
+    // Method 1: Use explicit jsonFileInfo if provided (most reliable)
+    if (jsonFileInfo && jsonFileInfo.jsonPath) {
+        params.append('jsonPath', jsonFileInfo.jsonPath);
+    } else {
+        // Method 2: Extract platformPath and subject from page context (fallback)
+        // Note: For backward compatibility, we support both 'platform' and 'platformPath'
+        let platformPath = platform; // platform parameter can be full path
+        if (!platformPath || !subject) {
+            const context = extractPageContext();
+            platformPath = platformPath || context.platformPath;
+            subject = subject || context.subject;
+        }
+        
+        // Add platformPath and subject if available (needed for "next lectures" feature)
+        // platformPath can be 'test3' or 'dams/damsb2benglish' depending on folder structure
+        if (platformPath) {
+            params.append('platformPath', platformPath);
+        }
+        if (subject) {
+            params.append('subject', subject);
+        }
     }
 
     // Open in the same window/tab
