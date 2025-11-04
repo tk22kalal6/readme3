@@ -479,46 +479,8 @@ function escapeHtml(text) {
       window.open(downloadUrl, '_blank');
     }
 
-    // Function to open the stream player with reCAPTCHA verification
-    function openStreamPlayer(streamUrl, downloadUrl, title) {
-      if (!streamUrl) {
-        alert('Stream URL not available');
-        return;
-      }
-
-      // Sanitize and encode the title properly to handle special characters
-      const sanitizedTitle = (title || 'Lecture Video').trim();
-      
-      // Build the URL with parameters - URLSearchParams automatically encodes special characters
-      const params = new URLSearchParams({
-        stream: streamUrl,
-        title: sanitizedTitle
-      });
-
-      // Add download URL if available
-      if (downloadUrl) {
-        params.append('download', downloadUrl);
-      }
-
-      // Smart path detection that works for both GitHub Pages (with repo name) and custom domains
-      const currentPath = window.location.pathname;
-      const pathParts = currentPath.split('/').filter(p => p && !p.includes('.html'));
-      
-      // Detect if we're on GitHub Pages without custom domain
-      const isGitHubPages = window.location.hostname.includes('github.io');
-      
-      let streamPlayerUrl;
-      if (isGitHubPages && pathParts.length > 0) {
-        // GitHub Pages without custom domain - include repo name
-        const repoName = pathParts[0];
-        streamPlayerUrl = `/${repoName}/stream-player.html?${params.toString()}`;
-      } else {
-        // Custom domain or root level - use absolute path from root
-        streamPlayerUrl = `/stream-player.html?${params.toString()}`;
-      }
-      
-      window.location.href = streamPlayerUrl;
-    }
+    // Note: openStreamPlayer function is provided by stream-player-utils.js
+    // It will use the PAGE_CONTEXT defined below to pass platform and subject
 
     // Search functionality
     document.getElementById('searchInput').addEventListener('input', function(e) {
@@ -534,6 +496,11 @@ function escapeHtml(text) {
       console.log('DOM loaded, starting lecture load...');
       loadLectures();
     });
+    // Define page context for stream-player-utils.js
+    window.PAGE_CONTEXT = {
+      platform: 'test3',  // Platform name from folder structure
+      subject: 'clinicalguruji'  // Subject name from JSON file
+    };
   </script>
 <script src="../../stream-player-utils.js"></script>
 </body>
