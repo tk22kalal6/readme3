@@ -446,8 +446,51 @@
         const streamUrl = urlParams.get('stream') || urlParams.get('url');
         const downloadUrl = urlParams.get('download');
         const videoTitle = urlParams.get('title') || 'Lecture Video';
-        const subjectName = urlParams.get('subject') || '';
-        const platformName = urlParams.get('platform') || '';
+        
+        // Priority 1: Use explicit jsonPath if provided (most reliable)
+        let jsonFilePath = urlParams.get('jsonPath') || '';
+        let subjectName = urlParams.get('subject') || '';
+        let platformPath = urlParams.get('platformPath') || urlParams.get('platform') || '';
+        
+        // Priority 2: Auto-detect from referrer if jsonPath not provided
+        if (!jsonFilePath && (!platformPath || !subjectName) && document.referrer) {
+            try {
+                const referrerUrl = new URL(document.referrer);
+                const referrerPath = referrerUrl.pathname;
+                
+                // Extract full path: 1234xx/platform/subfolder/.../subject.html
+                const match = referrerPath.match(/1234xx\/(.+)\.html$/);
+                if (match) {
+                    const fullPath = match[1]; // e.g., 'dams/damsb2benglish/anatomy' or 'test3/clinicalguruji'
+                    const pathParts = fullPath.split('/');
+                    
+                    if (!subjectName) {
+                        // Last part is the subject (filename without .html)
+                        subjectName = pathParts[pathParts.length - 1];
+                    }
+                    
+                    if (!platformPath) {
+                        // Everything before the last part is the platform path
+                        // e.g., 'dams/damsb2benglish' or just 'test3'
+                        platformPath = pathParts.slice(0, -1).join('/');
+                    }
+                    
+                    // Construct jsonPath from extracted parts (assuming HTML and JSON filenames match)
+                    if (!jsonFilePath && platformPath && subjectName) {
+                        jsonFilePath = `${platformPath}/${subjectName}.json`;
+                    }
+                }
+                
+                console.log('Auto-detected from referrer:', { platformPath, subjectName, jsonFilePath, referrerPath });
+            } catch (e) {
+                console.warn('Could not parse referrer URL:', e);
+            }
+        }
+        
+        // Priority 3: Construct from platformPath and subject if available
+        if (!jsonFilePath && platformPath && subjectName) {
+            jsonFilePath = `${platformPath}/${subjectName}.json`;
+        }
 
         // reCAPTCHA callback - enable button when completed
         function onRecaptchaSuccess() {
@@ -588,109 +631,170 @@
         function getDefaultThumbnail() {
             return 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="280" height="157" viewBox="0 0 280 157"%3E%3Crect fill="%23000" width="280" height="157"/%3E%3Ctext x="50%25" y="50%25" fill="%23666" font-family="Arial" font-size="16" text-anchor="middle" dominant-baseline="middle"%3ENo Thumbnail%3C/text%3E%3C/svg%3E';
         }
+        
+        // Helper function to render next lectures
+        async function renderNextLectures(data, jsonPath, container) {
+            if (!data.lectures || !Array.isArray(data.lectures)) {
+                throw new Error('Invalid lecture data');
+            }
+
+            // Find current lecture index
+            const currentIndex = data.lectures.findIndex(lecture => 
+                lecture.title === videoTitle
+            );
+
+            // Get next 4 lectures
+            const nextLectures = currentIndex !== -1 
+                ? data.lectures.slice(currentIndex + 1, currentIndex + 5)
+                : data.lectures.slice(0, 4);
+
+            if (nextLectures.length === 0) {
+                container.innerHTML = '<div class="no-more-lectures">No more lectures in this subject</div>';
+                return;
+            }
+
+            // Store the jsonPath for use when clicking next lectures
+            window.currentJsonPath = jsonPath;
+            
+            // Render next lectures
+            container.innerHTML = '';
+            nextLectures.forEach((lecture, index) => {
+                const card = document.createElement('div');
+                card.className = 'next-lecture-card';
+                card.onclick = () => openLecture(lecture);
+                
+                card.innerHTML = `
+                    <img src="${lecture.thumbnailUrl || getDefaultThumbnail()}" 
+                         alt="${lecture.title}" 
+                         class="next-lecture-thumbnail" 
+                         loading="lazy"
+                         onerror="this.src='${getDefaultThumbnail()}'">
+                    <div class="next-lecture-info">
+                        <div class="next-lecture-title">${lecture.title}</div>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+
+        // Search manifest.json to find which JSON file contains the current video
+        async function findJsonFileByTitle(title) {
+            try {
+                const manifestResponse = await fetch('1234xx/manifest.json');
+                if (!manifestResponse.ok) return null;
+                
+                const manifest = await manifestResponse.json();
+                
+                // Search through all platforms and their JSON files
+                for (const platformConfig of manifest) {
+                    const { platform, subfolder, files } = platformConfig;
+                    const basePath = subfolder === 'non' ? platform : `${platform}/${subfolder}`;
+                    
+                    // Check each JSON file to see if it contains the current lecture
+                    for (const jsonFile of files) {
+                        try {
+                            const jsonPath = `1234xx/${basePath}/${jsonFile}`;
+                            const response = await fetch(jsonPath);
+                            if (!response.ok) continue;
+                            
+                            const data = await response.json();
+                            if (!data.lectures || !Array.isArray(data.lectures)) continue;
+                            
+                            // Check if any lecture title matches
+                            const found = data.lectures.some(lecture => lecture.title === title);
+                            if (found) {
+                                console.log(`Found video "${title}" in ${jsonPath}`);
+                                return `${basePath}/${jsonFile}`;
+                            }
+                        } catch (e) {
+                            // Skip files that can't be loaded or parsed
+                            continue;
+                        }
+                    }
+                }
+                
+                return null;
+            } catch (e) {
+                console.error('Error searching manifest:', e);
+                return null;
+            }
+        }
 
         // Load next lectures from the same subject
         async function loadNextLectures() {
             const container = document.getElementById('nextLecturesContainer');
             
-            if (!subjectName || !platformName) {
+            let finalJsonPath = jsonFilePath;
+            let attemptedPaths = [];
+            
+            // Try multiple strategies to find the correct JSON file
+            
+            // Strategy 1: Try explicit/auto-detected jsonPath first (if provided)
+            if (finalJsonPath) {
+                try {
+                    const filePath = `1234xx/${finalJsonPath}`;
+                    attemptedPaths.push(filePath);
+                    console.log('Trying jsonPath:', filePath);
+                    
+                    const response = await fetch(filePath);
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.lectures && Array.isArray(data.lectures)) {
+                            // Success! Render the lectures
+                            await renderNextLectures(data, finalJsonPath, container);
+                            return;
+                        }
+                    }
+                    console.log(`Failed to load ${filePath} (${response.status}), trying manifest search...`);
+                } catch (e) {
+                    console.log('Error loading jsonPath:', e.message);
+                }
+                
+                // Reset finalJsonPath so we try manifest search
+                finalJsonPath = null;
+            }
+            
+            // Strategy 2: Search manifest.json by video title (handles filename mismatches)
+            if (!finalJsonPath && videoTitle) {
+                container.innerHTML = '<div class="loading" style="padding: 2rem; text-align: center;">Searching for next lectures...</div>';
+                console.log('Searching manifest for video:', videoTitle);
+                finalJsonPath = await findJsonFileByTitle(videoTitle);
+            }
+            
+            if (!finalJsonPath) {
+                console.log('Manifest search failed, attempted paths:', attemptedPaths);
                 container.innerHTML = '<div class="no-more-lectures">No additional lectures available</div>';
                 return;
             }
 
             try {
-                // Load the manifest to find the right JSON file
-                const manifestResponse = await fetch('1234xx/manifest.json');
-                if (!manifestResponse.ok) {
-                    throw new Error('Could not load manifest');
-                }
-
-                const manifest = await manifestResponse.json();
-                const platformFormatted = formatPlatformForPath(platformName);
+                // Use the jsonPath found via manifest search
+                const filePath = `1234xx/${finalJsonPath}`;
+                console.log('Loading next lectures from manifest result:', filePath);
                 
-                // Find the platform config
-                const platformConfig = manifest.find(p => 
-                    formatPlatformForPath(p.platform) === platformFormatted || 
-                    p.platform.toLowerCase() === platformFormatted
-                );
-
-                if (!platformConfig) {
-                    throw new Error('Platform not found');
-                }
-
-                const { platform: originalPlatform, subfolder } = platformConfig;
-                
-                // Try to find the JSON file for this subject
-                const subjectFileName = subjectName.replace(/\s+/g, '_') + '.json';
-                const filePath = subfolder === 'non' 
-                    ? `1234xx/${originalPlatform}/${subjectFileName}` 
-                    : `1234xx/${originalPlatform}/${subfolder}/${subjectFileName}`;
-
                 const response = await fetch(filePath);
                 if (!response.ok) {
-                    throw new Error('Could not load subject lectures');
+                    throw new Error(`Could not load ${filePath} (${response.status})`);
                 }
 
                 const data = await response.json();
-                if (!data.lectures || !Array.isArray(data.lectures)) {
-                    throw new Error('Invalid lecture data');
-                }
-
-                // Find current lecture index
-                const currentIndex = data.lectures.findIndex(lecture => 
-                    lecture.title === videoTitle
-                );
-
-                if (currentIndex === -1 || currentIndex >= data.lectures.length - 1) {
-                    container.innerHTML = '<div class="no-more-lectures">🎉 You\'ve reached the end of this subject!</div>';
-                    return;
-                }
-
-                // Get next 4 lectures
-                const nextLectures = data.lectures.slice(currentIndex + 1, currentIndex + 5);
-
-                if (nextLectures.length === 0) {
-                    container.innerHTML = '<div class="no-more-lectures">No more lectures in this subject</div>';
-                    return;
-                }
-
-                // Render next lectures
-                container.innerHTML = '';
-                nextLectures.forEach((lecture, index) => {
-                    const card = document.createElement('div');
-                    card.className = 'next-lecture-card';
-                    card.onclick = () => openLecture(lecture);
-                    
-                    card.innerHTML = `
-                        <img src="${lecture.thumbnailUrl || getDefaultThumbnail()}" 
-                             alt="${lecture.title}" 
-                             class="next-lecture-thumbnail" 
-                             loading="lazy"
-                             onerror="this.src='${getDefaultThumbnail()}'">
-                        <div class="next-lecture-info">
-                            <div class="next-lecture-title">${lecture.title}</div>
-                        </div>
-                    `;
-                    
-                    container.appendChild(card);
-                });
+                await renderNextLectures(data, finalJsonPath, container);
 
             } catch (error) {
                 console.error('Error loading next lectures:', error);
                 console.error('Debug info:', {
-                    subjectName,
-                    platformName,
+                    jsonFilePath,
+                    finalJsonPath,
                     videoTitle,
-                    currentPath: window.location.pathname,
+                    referrer: document.referrer,
                     error: error.message
                 });
                 container.innerHTML = `
                     <div class="no-more-lectures">
                         Could not load next lectures<br>
                         <small style="opacity: 0.7;">
-                            ${error.message || 'Unknown error'}<br>
-                            Platform: ${platformName || 'not set'}<br>
-                            Subject: ${subjectName || 'not set'}
+                            ${error.message || 'Unknown error'}
                         </small>
                     </div>
                 `;
@@ -701,10 +805,14 @@
         function openLecture(lecture) {
             const params = new URLSearchParams({
                 title: lecture.title,
-                url: lecture.streamingUrl || lecture.streamUrl || '',
-                subject: subjectName,
-                platform: platformName
+                stream: lecture.streamingUrl || lecture.streamUrl || ''
             });
+            
+            // Pass the jsonPath if we found it (stored in finalJsonPath by loadNextLectures)
+            // This ensures the next video also gets the correct JSON file
+            if (window.currentJsonPath) {
+                params.append('jsonPath', window.currentJsonPath);
+            }
             
             if (lecture.downloadUrl) {
                 params.append('download', lecture.downloadUrl);
