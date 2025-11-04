@@ -52,12 +52,6 @@
         <div class="search-results-grid" id="searchResultsGrid"></div>
       </div>
 
-      <!-- Last Watched Section -->
-      <div id="lastWatchedSection" class="carousel-container">
-        <h2 class="section-heading" data-testid="text-last-watched">Last Watched</h2>
-        <div class="carousel" id="lastWatchedCarousel"></div>
-      </div>
-
       <!-- Platform-wise Sections -->
       <div id="platformSections"></div>
 
@@ -79,18 +73,15 @@
     let allLectures = [];
     let platformLectures = {};
 
-    // Local Storage Manager
+    // Local Storage Manager - Keep only for saving watched history
     const LocalStorageManager = {
-      getLastWatched() {
-        try {
-          return JSON.parse(localStorage.getItem('lastWatched') || '[]');
-        } catch {
-          return [];
-        }
-      },
-      
       addToLastWatched(lecture) {
-        let lastWatched = this.getLastWatched();
+        let lastWatched = [];
+        try {
+          lastWatched = JSON.parse(localStorage.getItem('lastWatched') || '[]');
+        } catch {
+          lastWatched = [];
+        }
         
         // Remove if already exists
         lastWatched = lastWatched.filter(item => 
@@ -177,9 +168,8 @@
         console.log('Total lectures loaded:', allLectures.length);
         console.log('Platforms:', Object.keys(platformLectures));
         
-        // Initialize UI
+        // Initialize UI - Show platform sections directly for fast loading
         document.getElementById('loadingState').style.display = 'none';
-        renderLastWatched();
         renderPlatformSections();
       } catch (error) {
         console.error('Error loading lecture data:', error);
@@ -237,25 +227,6 @@
       return card;
     }
 
-    // Render Last Watched
-    function renderLastWatched() {
-      const lastWatched = LocalStorageManager.getLastWatched();
-      const container = document.getElementById('lastWatchedCarousel');
-      
-      if (lastWatched.length === 0) {
-        document.getElementById('lastWatchedSection').style.display = 'none';
-        return;
-      }
-      
-      document.getElementById('lastWatchedSection').style.display = 'block';
-      container.innerHTML = '';
-      
-      // Show only last 3 watched items
-      lastWatched.slice(0, 3).forEach(lecture => {
-        container.appendChild(createVideoCard(lecture));
-      });
-    }
-
     // Render Platform Sections
     function renderPlatformSections() {
       const container = document.getElementById('platformSections');
@@ -306,7 +277,6 @@
       if (query.length < 2) {
         suggestionsDropdown.classList.remove('active');
         searchResultsSection.style.display = 'none';
-        document.getElementById('lastWatchedSection').style.display = LocalStorageManager.getLastWatched().length > 0 ? 'block' : 'none';
         document.getElementById('platformSections').style.display = 'block';
         return;
       }
@@ -489,8 +459,7 @@
     }
 
     function displaySearchResults(results) {
-      // Hide other sections
-      document.getElementById('lastWatchedSection').style.display = 'none';
+      // Hide platform sections when showing search results
       document.getElementById('platformSections').style.display = 'none';
       
       // Show search results
