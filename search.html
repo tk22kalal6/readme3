@@ -7,8 +7,7 @@
   <meta name="description" content="Search across all NEET PG preparation platforms. Find specific lectures, topics, and subjects from Marrow, DAMS, and PrepLadder.">
   <meta name="keywords" content="search medical lectures, NEET PG search, find medical content, lecture search">
   <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="src/search/search.css">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="ott-search.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <script src="./access-control.js"></script>
   <script src="./block.js"></script>
@@ -28,165 +27,394 @@
       </button>
       <h1>Search</h1>
       <p class="header-subtitle">Find Your Medical Content</p>
-      <div class="search-bar">
-        <i class="fas fa-search"></i>
-        <input type="text" placeholder="Search topics, lectures..." id="mainSearchInput">
-      </div>
     </div>
   </header>
+  
   <main>
-    <div class="search-page">
-      <div class="search-container">
-        <div class="enhanced-search-bar">
-          <input type="text" placeholder="Search lectures..." class="search-input" id="enhancedSearchInput">
-        </div>
+    <div class="ott-container">
+      <!-- Search Bar with Auto-suggestions -->
+      <div class="ott-search-container">
+        <input 
+          type="text" 
+          class="ott-search-bar" 
+          id="ottSearchInput" 
+          placeholder="Search for lectures, topics, subjects..."
+          autocomplete="off"
+          data-testid="input-search"
+        >
+        <i class="fas fa-search search-icon"></i>
+        <div class="suggestions-dropdown" id="suggestionsDropdown"></div>
       </div>
-      <div class="search-results" id="searchResults">
-        <p class="search-prompt">Enter at least 2 characters to search</p>
+
+      <!-- Search Results Grid (Hidden by default) -->
+      <div id="searchResultsSection" style="display: none;">
+        <h2 class="section-heading" data-testid="text-search-results">Search Results</h2>
+        <div class="search-results-grid" id="searchResultsGrid"></div>
+      </div>
+
+      <!-- Last Watched Section -->
+      <div id="lastWatchedSection" class="carousel-container">
+        <h2 class="section-heading" data-testid="text-last-watched">Last Watched</h2>
+        <div class="carousel" id="lastWatchedCarousel"></div>
+      </div>
+
+      <!-- Platform-wise Sections -->
+      <div id="platformSections"></div>
+
+      <!-- Loading State -->
+      <div id="loadingState" class="loading">
+        <i class="fas fa-spinner fa-spin"></i> Loading lectures...
       </div>
     </div>
   </main>
   
-<nav class="bottom-nav">
-  <a href="app.html" class="active"><i class="fas fa-lightbulb"></i><span>Home</span></a>
-  <a href="00x1234.html"><i class="fas fa-play-circle"></i><span>Videos</span></a>
-  <a href="search.html"><i class="fas fa-search"></i><span>Search</span></a>
-  <a href="quiz/index.html"><i class="fas fa-question-circle"></i><span>Q Bank</span></a>
-</nav>
+  <nav class="bottom-nav">
+    <a href="app.html"><i class="fas fa-lightbulb"></i><span>Home</span></a>
+    <a href="00x1234.html"><i class="fas fa-play-circle"></i><span>Videos</span></a>
+    <a href="search.html" class="active"><i class="fas fa-search"></i><span>Search</span></a>
+    <a href="quiz/index.html"><i class="fas fa-question-circle"></i><span>Q Bank</span></a>
+  </nav>
 
   <script>
     let allLectures = [];
+    let platformLectures = {};
 
-    // Load lecture data using manifest.json
+    // Local Storage Manager
+    const LocalStorageManager = {
+      getLastWatched() {
+        try {
+          return JSON.parse(localStorage.getItem('lastWatched') || '[]');
+        } catch {
+          return [];
+        }
+      },
+      
+      addToLastWatched(lecture) {
+        let lastWatched = this.getLastWatched();
+        
+        // Remove if already exists
+        lastWatched = lastWatched.filter(item => 
+          !(item.title === lecture.title && item.platform === lecture.platform)
+        );
+        
+        // Add to beginning
+        lastWatched.unshift(lecture);
+        
+        // Keep only last 20 items
+        lastWatched = lastWatched.slice(0, 20);
+        
+        localStorage.setItem('lastWatched', JSON.stringify(lastWatched));
+      }
+    };
+
+    // Load lecture data from 1234xx folder
     async function loadLectureData() {
       try {
-        const manifestResponse = await fetch('platforms/manifest.json');
+        const manifestResponse = await fetch('1234xx/manifest.json');
         if (!manifestResponse.ok) {
-          console.error('Could not load manifest.json');
+          console.error('Could not load 1234xx/manifest.json');
           return;
         }
         
         const manifest = await manifestResponse.json();
         
         for (const platformConfig of manifest) {
-          const { platform, subfolder, files } = platformConfig;
+          const { platform: originalPlatform, subfolder, files } = platformConfig;
           
-          const folderPath = subfolder === 'non' ? platform : `${platform}/${subfolder}`;
+          // Keep original platform name for file paths
+          const platformDisplay = formatPlatformName(originalPlatform);
+          
+          if (!platformLectures[platformDisplay]) {
+            platformLectures[platformDisplay] = {};
+          }
           
           for (const jsonFile of files) {
             try {
-              const response = await fetch(`platforms/${folderPath}/${jsonFile}`);
+              const filePath = subfolder === 'non' 
+                ? `1234xx/${originalPlatform}/${jsonFile}` 
+                : `1234xx/${originalPlatform}/${subfolder}/${jsonFile}`;
+              
+              const response = await fetch(filePath);
               if (response.ok) {
                 const data = await response.json();
                 if (data.lectures && Array.isArray(data.lectures)) {
+                  const subjectName = data.subjectName || jsonFile.replace('.json', '');
+                  
+                  if (!platformLectures[platformDisplay][subjectName]) {
+                    platformLectures[platformDisplay][subjectName] = [];
+                  }
+                  
                   data.lectures.forEach(lecture => {
-                    allLectures.push({
+                    const lectureData = {
                       title: lecture.title,
-                      subject: data.subjectName || jsonFile.replace('.json', ''),
-                      platform: platform.charAt(0).toUpperCase() + platform.slice(1),
+                      subject: subjectName,
+                      platform: platformDisplay,
+                      streamingUrl: lecture.streamingUrl || lecture.streamUrl || '',
+                      downloadUrl: lecture.downloadUrl || '',
+                      thumbnailUrl: lecture.thumbnailUrl || getDefaultThumbnail(),
                       duration: lecture.duration || 'N/A',
-                      url: `platforms/${platform}/${jsonFile.replace('.json', '.html')}`,
-                      streamingUrl: lecture.streamingUrl || lecture.streamUrl
-                    });
+                      folderPath: `1234xx/${originalPlatform}/${subfolder !== 'non' ? subfolder + '/' : ''}`
+                    };
+                    
+                    allLectures.push(lectureData);
+                    platformLectures[platformDisplay][subjectName].push(lectureData);
                   });
                 }
               }
             } catch (error) {
-              console.log(`Could not load ${folderPath}/${jsonFile}:`, error);
+              console.log(`Could not load ${filePath}:`, error);
             }
           }
         }
         
         console.log('Total lectures loaded:', allLectures.length);
+        console.log('Platforms:', Object.keys(platformLectures));
+        
+        // Initialize UI
+        document.getElementById('loadingState').style.display = 'none';
+        renderLastWatched();
+        renderPlatformSections();
       } catch (error) {
         console.error('Error loading lecture data:', error);
+        document.getElementById('loadingState').innerHTML = '<p class="no-results">Error loading lecture data</p>';
       }
     }
 
-    function handleSearch(query) {
-      const resultsContainer = document.getElementById('searchResults');
+    // Format platform name
+    function formatPlatformName(platform) {
+      const mapping = {
+        'prepladder6': 'PrepLadder 6.0',
+        'prepladder6x': 'PrepLadder 6X',
+        'prepladder5': 'PrepLadder 5.0',
+        'marrow': 'Marrow',
+        'marrow6': 'Marrow 6.0',
+        'ma00xrow': 'Marrow',
+        'dams': 'DAMS',
+        'egurukul': 'E-Gurukul',
+        'physicswala': 'Physics Wallah',
+        'cerebellum': 'Cerebellum',
+        'doctut': 'Doctut',
+        'mist': 'MIST',
+        'specific': 'Special Lectures',
+        'test': 'Test',
+        'test2': 'Test 2',
+        'test3': 'Test 3'
+      };
+      return mapping[platform.toLowerCase()] || platform.charAt(0).toUpperCase() + platform.slice(1);
+    }
+
+    // Get default thumbnail
+    function getDefaultThumbnail() {
+      return 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="280" height="157" viewBox="0 0 280 157"%3E%3Crect fill="%23000" width="280" height="157"/%3E%3Ctext x="50%25" y="50%25" fill="%23666" font-family="Arial" font-size="16" text-anchor="middle" dominant-baseline="middle"%3ENo Thumbnail%3C/text%3E%3C/svg%3E';
+    }
+
+    // Create video card
+    function createVideoCard(lecture) {
+      const card = document.createElement('div');
+      card.className = 'video-card';
+      card.dataset.testid = `card-video-${lecture.title.replace(/[^a-z0-9]/gi, '-').toLowerCase()}`;
       
-      if (query.length < 2) {
-        resultsContainer.innerHTML = '<p class="search-prompt">Enter at least 2 characters to search</p>';
-        return;
-      }
-
-      searchLectures(query.toLowerCase(), resultsContainer);
-    }
-
-    function searchLectures(query, resultsContainer) {
-      const results = allLectures.filter(lecture =>
-        lecture.title.toLowerCase().includes(query) ||
-        lecture.subject.toLowerCase().includes(query) ||
-        lecture.platform.toLowerCase().includes(query)
-      );
-
-      displayLectureResults(results, resultsContainer);
-    }
-
-    function displayLectureResults(results, container) {
-      if (results.length === 0) {
-        container.innerHTML = '<p class="no-results">No lectures found</p>';
-        return;
-      }
-
-      container.innerHTML = results.map(lecture => `
-        <div class="search-result-card" onclick="openVideo('${lecture.title}', '${lecture.streamingUrl || lecture.streamUrl || ''}')">
-          <div class="result-header">
-            <i class="fas fa-play-circle"></i>
-            <h3>${lecture.title}</h3>
-          </div>
-          <div class="result-details">
-            <span><i class="fas fa-book-medical"></i> ${lecture.subject}</span>
-            <span><i class="fas fa-building"></i> ${lecture.platform}</span>
-            <span><i class="fas fa-clock"></i> ${lecture.duration}</span>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    // Event listeners
-    document.getElementById('enhancedSearchInput').addEventListener('input', function(e) {
-      handleSearch(e.target.value);
-    });
-
-    document.getElementById('mainSearchInput').addEventListener('input', function(e) {
-      const enhancedInput = document.getElementById('enhancedSearchInput');
-      enhancedInput.value = e.target.value;
-      handleSearch(e.target.value);
-    });
-
-    // Video popup functions (using same styling as platforms)
-    function openVideo(title, url) {
-      if (!url) {
-        alert('Video URL not available for this lecture');
-        return;
-      }
-      
-      const popup = document.createElement('div');
-      popup.className = 'video-popup';
-      popup.innerHTML = `
-        <div class="video-popup-content">
-          <button class="close-popup" onclick="closeVideo(this)">&times;</button>
-          <h2 class="video-title">${title}</h2>
-          <div class="iframe-container">
-            <iframe src="${url}" allowfullscreen></iframe>
+      card.innerHTML = `
+        <img src="${lecture.thumbnailUrl}" alt="${lecture.title}" class="video-card-thumbnail" loading="lazy" onerror="this.src='${getDefaultThumbnail()}'">
+        <div class="video-card-info">
+          <div class="video-card-title" data-testid="text-video-title">${lecture.title}</div>
+          <div class="video-card-meta">
+            <span><i class="fas fa-book-medical"></i>${lecture.subject}</span>
+            <span><i class="fas fa-building"></i>${lecture.platform}</span>
           </div>
         </div>
       `;
       
-      popup.onclick = function(e) {
-        if (e.target === popup) {
-          closeVideo(popup.querySelector('.close-popup'));
-        }
-      };
+      card.addEventListener('click', () => openVideo(lecture));
       
-      document.body.appendChild(popup);
+      return card;
     }
 
-    function closeVideo(button) {
-      const popup = button.closest('.video-popup');
-      document.body.removeChild(popup);
+    // Render Last Watched
+    function renderLastWatched() {
+      const lastWatched = LocalStorageManager.getLastWatched();
+      const container = document.getElementById('lastWatchedCarousel');
+      
+      if (lastWatched.length === 0) {
+        document.getElementById('lastWatchedSection').style.display = 'none';
+        return;
+      }
+      
+      document.getElementById('lastWatchedSection').style.display = 'block';
+      container.innerHTML = '';
+      
+      // Show first 4 items
+      lastWatched.slice(0, 4).forEach(lecture => {
+        container.appendChild(createVideoCard(lecture));
+      });
+    }
+
+    // Render Platform Sections
+    function renderPlatformSections() {
+      const container = document.getElementById('platformSections');
+      container.innerHTML = '';
+      
+      Object.keys(platformLectures).forEach(platform => {
+        const subjects = platformLectures[platform];
+        const randomLectures = [];
+        
+        // Get one random lecture from each subject
+        Object.keys(subjects).forEach(subject => {
+          const lectures = subjects[subject];
+          if (lectures.length > 0) {
+            const randomIndex = Math.floor(Math.random() * lectures.length);
+            randomLectures.push(lectures[randomIndex]);
+          }
+        });
+        
+        if (randomLectures.length === 0) return;
+        
+        const section = document.createElement('div');
+        section.className = 'carousel-container';
+        section.innerHTML = `
+          <h2 class="section-heading" data-testid="text-platform-${platform.replace(/[^a-z0-9]/gi, '-').toLowerCase()}">${platform} Lectures</h2>
+          <div class="carousel" data-testid="carousel-${platform.replace(/[^a-z0-9]/gi, '-').toLowerCase()}"></div>
+        `;
+        
+        const carousel = section.querySelector('.carousel');
+        randomLectures.forEach(lecture => {
+          carousel.appendChild(createVideoCard(lecture));
+        });
+        
+        container.appendChild(section);
+      });
+    }
+
+    // Search functionality with auto-suggestions
+    const searchInput = document.getElementById('ottSearchInput');
+    const suggestionsDropdown = document.getElementById('suggestionsDropdown');
+    const searchResultsSection = document.getElementById('searchResultsSection');
+    const searchResultsGrid = document.getElementById('searchResultsGrid');
+    let searchTimeout;
+
+    searchInput.addEventListener('input', function(e) {
+      const query = e.target.value.trim();
+      
+      clearTimeout(searchTimeout);
+      
+      if (query.length < 2) {
+        suggestionsDropdown.classList.remove('active');
+        searchResultsSection.style.display = 'none';
+        document.getElementById('lastWatchedSection').style.display = LocalStorageManager.getLastWatched().length > 0 ? 'block' : 'none';
+        document.getElementById('platformSections').style.display = 'block';
+        return;
+      }
+      
+      searchTimeout = setTimeout(() => {
+        showSuggestions(query);
+        // Also perform search automatically after debounce
+        if (query.length >= 2) {
+          performSearch(query);
+        }
+      }, 300);
+    });
+    
+    // Add Enter key handler
+    searchInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        const query = e.target.value.trim();
+        suggestionsDropdown.classList.remove('active');
+        if (query.length >= 2) {
+          performSearch(query);
+        }
+      }
+    });
+
+    function showSuggestions(query) {
+      const lowerQuery = query.toLowerCase();
+      
+      // Get unique matching titles
+      const matchingTitles = new Set();
+      allLectures.forEach(lecture => {
+        if (lecture.title.toLowerCase().includes(lowerQuery)) {
+          matchingTitles.add(lecture.title);
+        }
+      });
+      
+      const suggestions = Array.from(matchingTitles).slice(0, 10);
+      
+      if (suggestions.length === 0) {
+        suggestionsDropdown.classList.remove('active');
+        return;
+      }
+      
+      suggestionsDropdown.innerHTML = suggestions.map(title => `
+        <div class="suggestion-item" data-testid="suggestion-${title.replace(/[^a-z0-9]/gi, '-').toLowerCase()}">${title}</div>
+      `).join('');
+      
+      suggestionsDropdown.classList.add('active');
+      
+      // Add click handlers
+      suggestionsDropdown.querySelectorAll('.suggestion-item').forEach(item => {
+        item.addEventListener('click', function() {
+          searchInput.value = this.textContent;
+          suggestionsDropdown.classList.remove('active');
+          performSearch(this.textContent);
+        });
+      });
+    }
+
+    function performSearch(query) {
+      const lowerQuery = query.toLowerCase();
+      const results = allLectures.filter(lecture =>
+        lecture.title.toLowerCase().includes(lowerQuery) ||
+        lecture.subject.toLowerCase().includes(lowerQuery) ||
+        lecture.platform.toLowerCase().includes(lowerQuery)
+      );
+      
+      displaySearchResults(results);
+    }
+
+    function displaySearchResults(results) {
+      // Hide other sections
+      document.getElementById('lastWatchedSection').style.display = 'none';
+      document.getElementById('platformSections').style.display = 'none';
+      
+      // Show search results
+      searchResultsSection.style.display = 'block';
+      searchResultsGrid.innerHTML = '';
+      
+      if (results.length === 0) {
+        searchResultsGrid.innerHTML = '<p class="no-results">No lectures found</p>';
+        return;
+      }
+      
+      results.forEach(lecture => {
+        searchResultsGrid.appendChild(createVideoCard(lecture));
+      });
+    }
+
+    // Close suggestions when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.ott-search-container')) {
+        suggestionsDropdown.classList.remove('active');
+      }
+    });
+
+    // Open video (redirect to stream-player.html)
+    function openVideo(lecture) {
+      // Save to last watched
+      LocalStorageManager.addToLastWatched(lecture);
+      
+      if (!lecture.streamingUrl) {
+        alert('Video URL not available for this lecture');
+        return;
+      }
+      
+      // Redirect to stream-player.html with video data
+      const params = new URLSearchParams({
+        title: lecture.title,
+        url: lecture.streamingUrl,
+        subject: lecture.subject,
+        platform: lecture.platform
+      });
+      
+      window.location.href = `stream-player.html?${params.toString()}`;
     }
 
     // Initialize data on page load
