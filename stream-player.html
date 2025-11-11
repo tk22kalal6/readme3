@@ -447,6 +447,10 @@
         const downloadUrl = urlParams.get('download');
         const videoTitle = urlParams.get('title') || 'Lecture Video';
         
+        // NEW: Get lecture index if provided (helps avoid title matching issues)
+        const lectureIndexParam = urlParams.get('lectureIndex');
+        const lectureIndex = lectureIndexParam !== null ? parseInt(lectureIndexParam, 10) : null;
+        
         // Priority 1: Use explicit jsonPath if provided (most reliable)
         let jsonFilePath = urlParams.get('jsonPath') || '';
         let subjectName = urlParams.get('subject') || '';
@@ -639,9 +643,18 @@
             }
 
             // Find current lecture index
-            const currentIndex = data.lectures.findIndex(lecture => 
-                lecture.title === videoTitle
-            );
+            // Priority 1: Use explicit lectureIndex from URL parameter (most reliable)
+            let currentIndex = lectureIndex;
+            
+            // Priority 2: Fall back to title matching if index not provided
+            if (currentIndex === null || currentIndex === undefined || isNaN(currentIndex)) {
+                currentIndex = data.lectures.findIndex(lecture => 
+                    lecture.title === videoTitle
+                );
+                console.log('Lecture index not provided, found by title matching:', currentIndex);
+            } else {
+                console.log('Using provided lecture index:', currentIndex);
+            }
 
             // Get next 4 lectures
             const nextLectures = currentIndex !== -1 
@@ -655,13 +668,19 @@
 
             // Store the jsonPath for use when clicking next lectures
             window.currentJsonPath = jsonPath;
+            // Store all lectures and current index for navigation
+            window.allLectures = data.lectures;
+            window.currentLectureIndex = currentIndex;
             
             // Render next lectures
             container.innerHTML = '';
-            nextLectures.forEach((lecture, index) => {
+            nextLectures.forEach((lecture, relativeIndex) => {
+                // Calculate the actual index in the full lectures array
+                const actualIndex = currentIndex + 1 + relativeIndex;
+                
                 const card = document.createElement('div');
                 card.className = 'next-lecture-card';
-                card.onclick = () => openLecture(lecture);
+                card.onclick = () => openLecture(lecture, actualIndex);
                 
                 card.innerHTML = `
                     <img src="${lecture.thumbnailUrl || getDefaultThumbnail()}" 
@@ -802,7 +821,8 @@
         }
 
         // Open a lecture (same as clicking from search)
-        function openLecture(lecture) {
+        // NEW: Pass the lecture index to avoid title matching issues
+        function openLecture(lecture, index) {
             const params = new URLSearchParams({
                 title: lecture.title,
                 stream: lecture.streamingUrl || lecture.streamUrl || ''
@@ -812,6 +832,11 @@
             // This ensures the next video also gets the correct JSON file
             if (window.currentJsonPath) {
                 params.append('jsonPath', window.currentJsonPath);
+            }
+            
+            // NEW: Pass the lecture index so we don't need to rely on title matching
+            if (typeof index === 'number') {
+                params.append('lectureIndex', index.toString());
             }
             
             if (lecture.downloadUrl) {
