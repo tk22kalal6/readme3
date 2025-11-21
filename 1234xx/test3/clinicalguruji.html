@@ -425,16 +425,15 @@ function escapeHtml(text) {
         
         // Use addEventListener instead of onclick attribute to avoid escaping issues
         openButton.addEventListener('click', function() {
-          // NEW: Pass the lecture index instead of hardcoded paths
-          // The openStreamPlayer function will automatically:
-          // 1. Resolve the JSON path from the current page URL (1234xx/test3/clinicalguruji.html → test3/clinicalguruji.json)
-          // 2. Pass the lecture index so stream-player knows which lecture was clicked
-          // 3. Load next lectures (index+1, index+2, index+3, index+4) from the same JSON
+          // Simply call openStreamPlayer - stream-player-utils.js will automatically:
+          // 1. Extract platform and subject from current page URL (1234xx/test3/clinicalguruji.html)
+          // 2. Build the correct JSON file path (test3/clinicalguruji.json)
+          // 3. Pass the lecture index for next lectures feature
+          // NO HARDCODING NEEDED - works for ALL 1000+ HTML files automatically!
           openStreamPlayer(
             lecture.streamingUrl, 
             lecture.downloadUrl || lecture.streamingUrl, 
-            lecture.title,
-            { index: index } // Simply pass the lecture index - that's it!
+            lecture.title
           );
         });
         
