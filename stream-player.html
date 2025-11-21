@@ -495,6 +495,19 @@
         if (!jsonFilePath && platformPath && subjectName) {
             jsonFilePath = `${platformPath}/${subjectName}.json`;
         }
+        
+        // Debug logging to trace parameter flow
+        console.log('===== Stream Player URL Parameters =====');
+        console.log('Parsed URL params:', {
+            streamUrl,
+            downloadUrl,
+            videoTitle,
+            lectureIndex,
+            jsonFilePath,
+            platformPath,
+            subjectName
+        });
+        console.log('======================================');
 
         // reCAPTCHA callback - enable button when completed
         function onRecaptchaSuccess() {
