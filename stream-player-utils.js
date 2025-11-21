@@ -66,6 +66,11 @@ function openStreamPlayer(streamUrl, downloadUrl, title, platform, subject, json
     // Method 1: Use explicit jsonFileInfo if provided (most reliable)
     if (jsonFileInfo && jsonFileInfo.jsonPath) {
         params.append('jsonPath', jsonFileInfo.jsonPath);
+        
+        // Also pass the lecture index if available (helps avoid title matching issues)
+        if (typeof jsonFileInfo.lectureIndex === 'number') {
+            params.append('lectureIndex', jsonFileInfo.lectureIndex.toString());
+        }
     } else {
         // Method 2: Extract platformPath and subject from page context (fallback)
         // Note: For backward compatibility, we support both 'platform' and 'platformPath'
@@ -118,7 +123,10 @@ function replaceStreamDownloadButtons(container) {
         container.querySelectorAll('.lecture-card') : 
         document.querySelectorAll('.lecture-card');
 
-    lectureCards.forEach(card => {
+    // Extract page context once (for JSON path construction)
+    const pageContext = extractPageContext();
+
+    lectureCards.forEach((card, index) => {
         const buttonContainer = card.querySelector('.button-container');
         if (!buttonContainer) return;
 
@@ -150,7 +158,27 @@ function replaceStreamDownloadButtons(container) {
         // Use arrow function to ensure proper context and handle special characters in title
         openBtn.onclick = (e) => {
             e.preventDefault();
-            openStreamPlayer(streamUrl, downloadUrl, title);
+            
+            // Construct jsonFileInfo from page context
+            let jsonFileInfo = null;
+            if (pageContext.platformPath && pageContext.subject) {
+                jsonFileInfo = {
+                    jsonPath: `${pageContext.platformPath}/${pageContext.subject}.json`,
+                    platform: pageContext.platformPath,
+                    subject: pageContext.subject,
+                    lectureIndex: index  // Pass the card index as lecture index
+                };
+            }
+            
+            // Call with full context including jsonFileInfo
+            openStreamPlayer(
+                streamUrl, 
+                downloadUrl, 
+                title, 
+                pageContext.platformPath, 
+                pageContext.subject, 
+                jsonFileInfo
+            );
         };
 
         // Replace button container content
