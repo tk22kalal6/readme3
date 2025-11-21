@@ -43,6 +43,9 @@ function extractPageContext() {
 // Function to open the stream player with reCAPTCHA verification
 // jsonFileInfo is an optional object: { jsonPath: 'test3/clinicalguruji.json', platform: 'test3', subject: 'clinicalguruji' }
 function openStreamPlayer(streamUrl, downloadUrl, title, platform, subject, jsonFileInfo) {
+    console.log('===== openStreamPlayer called =====');
+    console.log('Parameters received:', { streamUrl, downloadUrl, title, platform, subject, jsonFileInfo });
+    
     if (!streamUrl) {
         alert('Stream URL not available');
         return;
@@ -65,13 +68,16 @@ function openStreamPlayer(streamUrl, downloadUrl, title, platform, subject, json
     
     // Method 1: Use explicit jsonFileInfo if provided (most reliable)
     if (jsonFileInfo && jsonFileInfo.jsonPath) {
+        console.log('Using jsonFileInfo:', jsonFileInfo);
         params.append('jsonPath', jsonFileInfo.jsonPath);
         
         // Also pass the lecture index if available (helps avoid title matching issues)
         if (typeof jsonFileInfo.lectureIndex === 'number') {
+            console.log('Adding lectureIndex:', jsonFileInfo.lectureIndex);
             params.append('lectureIndex', jsonFileInfo.lectureIndex.toString());
         }
     } else {
+        console.log('No jsonFileInfo provided, trying platformPath/subject fallback');
         // Method 2: Extract platformPath and subject from page context (fallback)
         // Note: For backward compatibility, we support both 'platform' and 'platformPath'
         let platformPath = platform; // platform parameter can be full path
@@ -124,7 +130,9 @@ function replaceStreamDownloadButtons(container) {
         document.querySelectorAll('.lecture-card');
 
     // Extract page context once (for JSON path construction)
+    // This works automatically for ANY HTML file based on its URL path
     const pageContext = extractPageContext();
+    console.log('Page context extracted:', pageContext);
 
     lectureCards.forEach((card, index) => {
         const buttonContainer = card.querySelector('.button-container');
@@ -159,16 +167,16 @@ function replaceStreamDownloadButtons(container) {
         openBtn.onclick = (e) => {
             e.preventDefault();
             
-            // Construct jsonFileInfo from page context
-            let jsonFileInfo = null;
-            if (pageContext.platformPath && pageContext.subject) {
-                jsonFileInfo = {
-                    jsonPath: `${pageContext.platformPath}/${pageContext.subject}.json`,
-                    platform: pageContext.platformPath,
-                    subject: pageContext.subject,
-                    lectureIndex: index  // Pass the card index as lecture index
-                };
-            }
+            // Dynamically build jsonFileInfo from page context (NO HARDCODING NEEDED)
+            // Works for ALL HTML files automatically
+            const jsonFileInfo = {
+                jsonPath: `${pageContext.platformPath}/${pageContext.subject}.json`,
+                platform: pageContext.platformPath,
+                subject: pageContext.subject,
+                lectureIndex: index  // Pass the card index as lecture index
+            };
+            
+            console.log('Opening stream with jsonFileInfo:', jsonFileInfo);
             
             // Call with full context including jsonFileInfo
             openStreamPlayer(
