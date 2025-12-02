@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Article - Brain And Scalpel</title>
+  <title>Article - Nextpulse</title>
   <link rel="stylesheet" href="../../styles.css">
   <link rel="stylesheet" href="brain-styles.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -147,10 +147,17 @@
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
 
+    /* Horizontal scroll container for tables */
+    .table-scroll-container {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin: 1rem 0;
+    }
+
     .article-body table {
+      min-width: 600px;
       width: 100%;
       border-collapse: collapse;
-      margin: 1rem 0;
       font-size: 0.95rem;
     }
 
@@ -158,6 +165,69 @@
       border: 1px solid #e2e8f0;
       padding: 0.75rem;
       text-align: left;
+      white-space: nowrap;
+    }
+    
+    /* Global Search */
+    .global-search-container {
+      margin-bottom: 1.5rem;
+    }
+    .global-search-bar {
+      background: white;
+      border-radius: 25px;
+      padding: 0.75rem 1.25rem;
+      display: flex;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+    .global-search-bar i {
+      color: #718096;
+      margin-right: 0.75rem;
+    }
+    .global-search-bar input {
+      background: none;
+      border: none;
+      outline: none;
+      width: 100%;
+      font-size: 1rem;
+      color: #2d3748;
+    }
+    .search-results {
+      margin-top: 0.75rem;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      max-height: 300px;
+      overflow-y: auto;
+      display: none;
+    }
+    .search-results.active {
+      display: block;
+    }
+    .search-result-item {
+      padding: 0.75rem 1rem;
+      cursor: pointer;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .search-result-item:hover {
+      background: #f7fafc;
+    }
+    .search-result-item:last-child {
+      border-bottom: none;
+    }
+    .search-result-item i {
+      color: #2c5282;
+    }
+    .search-result-item .result-title {
+      font-weight: 500;
+      color: #2d3748;
+    }
+    .search-result-item .result-path {
+      font-size: 0.8rem;
+      color: #718096;
     }
 
     .article-body th {
@@ -350,12 +420,21 @@
         <i class="fas fa-arrow-left"></i>
       </button>
       <h1 id="pageTitle">Articles</h1>
-      <p class="header-subtitle" id="articleInfo">Brain And Scalpel</p>
+      <p class="header-subtitle" id="articleInfo">Nextpulse</p>
     </div>
   </header>
 
   <main>
     <div class="article-container">
+      <!-- Global Search -->
+      <div class="global-search-container">
+        <div class="global-search-bar">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Search all topics and articles..." id="globalSearchInput" oninput="handleGlobalSearch(event)">
+        </div>
+        <div class="search-results" id="searchResults"></div>
+      </div>
+      
       <div id="loading" class="loading-spinner">
         <i class="fas fa-spinner fa-spin"></i>
         <p>Loading articles...</p>
@@ -421,6 +500,79 @@
     let folderName = '';
     let folderPath = '';
     let pathString = '';
+    let allManifestFiles = []; // For global search
+    
+    // Global Search
+    async function loadManifestForSearch() {
+      try {
+        const response = await fetch('./file-manifest.json');
+        if (response.ok) {
+          const manifest = await response.json();
+          allManifestFiles = [];
+          
+          if (manifest.folders) {
+            for (const [folderPathKey, folderData] of Object.entries(manifest.folders)) {
+              if (folderData.files && Array.isArray(folderData.files)) {
+                folderData.files.forEach(fileName => {
+                  allManifestFiles.push({
+                    name: fileName.replace('.json', '').replace(/_/g, ' '),
+                    path: `./${folderPathKey}/${fileName}`,
+                    folderPath: folderPathKey,
+                    type: folderData.type || 'quiz'
+                  });
+                });
+              }
+            }
+          }
+        }
+      } catch (e) {
+        console.log('Could not load manifest for search');
+      }
+    }
+    
+    function handleGlobalSearch(event) {
+      const query = event.target.value.toLowerCase().trim();
+      const resultsContainer = document.getElementById('searchResults');
+      
+      if (query.length < 2) {
+        resultsContainer.classList.remove('active');
+        return;
+      }
+      
+      const filtered = allManifestFiles.filter(file => 
+        file.name.toLowerCase().includes(query) ||
+        file.folderPath.toLowerCase().includes(query)
+      );
+      
+      if (filtered.length === 0) {
+        resultsContainer.innerHTML = '<div class="search-result-item"><span>No results found</span></div>';
+        resultsContainer.classList.add('active');
+        return;
+      }
+      
+      resultsContainer.innerHTML = filtered.slice(0, 10).map(file => `
+        <div class="search-result-item" onclick="openSearchResult('${encodeURIComponent(file.path)}', '${file.type}', '${encodeURIComponent(file.folderPath)}')">
+          <i class="fas ${file.type === 'article' ? 'fa-file-medical-alt' : 'fa-question-circle'}"></i>
+          <div>
+            <div class="result-title">${file.name}</div>
+            <div class="result-path">${file.folderPath}</div>
+          </div>
+        </div>
+      `).join('');
+      resultsContainer.classList.add('active');
+    }
+    
+    function openSearchResult(path, type, folderPathEncoded) {
+      const decodedPath = decodeURIComponent(path);
+      const decodedFolderPath = decodeURIComponent(folderPathEncoded);
+      const fileName = decodedPath.split('/').pop().replace('.json', '').replace(/_/g, ' ');
+      
+      if (type === 'article') {
+        window.location.href = `article.html?folder=${encodeURIComponent(fileName)}&folderPath=${encodeURIComponent(decodedFolderPath)}`;
+      } else {
+        window.location.href = `quiz.html?folder=${encodeURIComponent(fileName)}&folderPath=${encodeURIComponent(decodedFolderPath)}`;
+      }
+    }
 
     function goBack() {
       if (pathString) {
@@ -445,6 +597,9 @@
       document.getElementById('pageTitle').textContent = folderName;
       document.getElementById('articleInfo').textContent = 'Medical Articles';
 
+      // Load manifest for global search
+      loadManifestForSearch();
+      
       await loadArticles();
     }
 
@@ -634,6 +789,10 @@
       content = content.replace(/data-content="[^"]*"/g, '');
       content = content.replace(/id="[^"]*"/g, '');
       content = content.replace(/data-[a-z-]+="[^"]*"/g, '');
+      
+      // Wrap tables in scroll containers for horizontal scrolling
+      content = content.replace(/<table/g, '<div class="table-scroll-container"><table');
+      content = content.replace(/<\/table>/g, '</table></div>');
       
       document.getElementById('articleContent').innerHTML = content;
 
