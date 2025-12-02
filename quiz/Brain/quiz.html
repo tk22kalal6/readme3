@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quiz - Brain And Scalpel</title>
+  <title>Quiz - Nextpulse</title>
   <link rel="stylesheet" href="../../styles.css">
   <link rel="stylesheet" href="../quiz-styles.css">
   <link rel="stylesheet" href="brain-styles.css">
@@ -22,6 +22,9 @@
     .file-selector h3 {
       margin-bottom: 1rem;
       color: #2d3748;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
     .file-list {
       display: grid;
@@ -92,6 +95,218 @@
       border-radius: 8px;
       margin: 1rem 0;
     }
+    
+    /* Global Search Bar */
+    .global-search-container {
+      margin-bottom: 1.5rem;
+    }
+    .global-search-bar {
+      background: white;
+      border-radius: 25px;
+      padding: 0.75rem 1.25rem;
+      display: flex;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+    .global-search-bar i {
+      color: #718096;
+      margin-right: 0.75rem;
+    }
+    .global-search-bar input {
+      background: none;
+      border: none;
+      outline: none;
+      width: 100%;
+      font-size: 1rem;
+      color: #2d3748;
+    }
+    .search-results {
+      margin-top: 0.75rem;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      max-height: 300px;
+      overflow-y: auto;
+      display: none;
+    }
+    .search-results.active {
+      display: block;
+    }
+    .search-result-item {
+      padding: 0.75rem 1rem;
+      cursor: pointer;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .search-result-item:hover {
+      background: #f7fafc;
+    }
+    .search-result-item:last-child {
+      border-bottom: none;
+    }
+    .search-result-item i {
+      color: #2c5282;
+    }
+    .search-result-item .result-title {
+      font-weight: 500;
+      color: #2d3748;
+    }
+    .search-result-item .result-path {
+      font-size: 0.8rem;
+      color: #718096;
+    }
+    
+    /* Mode Selector */
+    .mode-selector {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+    .mode-selector h3 {
+      margin-bottom: 1rem;
+      color: #2d3748;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .mode-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    @media (max-width: 480px) {
+      .mode-options {
+        grid-template-columns: 1fr;
+      }
+    }
+    .mode-option {
+      padding: 1.25rem;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-align: center;
+    }
+    .mode-option:hover {
+      border-color: #2c5282;
+      background: #f7fafc;
+    }
+    .mode-option.selected {
+      border-color: #2c5282;
+      background: #2c5282;
+      color: white;
+    }
+    .mode-option i {
+      font-size: 2rem;
+      margin-bottom: 0.75rem;
+      display: block;
+    }
+    .mode-option .mode-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    .mode-option .mode-desc {
+      font-size: 0.85rem;
+      opacity: 0.8;
+    }
+    .mode-option.selected .mode-desc {
+      opacity: 0.9;
+    }
+    
+    /* Timer */
+    .quiz-timer {
+      position: fixed;
+      top: 80px;
+      right: 1rem;
+      background: white;
+      padding: 0.75rem 1.25rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 600;
+      color: #2c5282;
+    }
+    .quiz-timer.warning {
+      background: #fef3c7;
+      color: #d97706;
+    }
+    .quiz-timer.danger {
+      background: #fee2e2;
+      color: #dc2626;
+      animation: pulse 1s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    .quiz-timer i {
+      font-size: 1.1rem;
+    }
+    
+    /* Test Mode Styling */
+    .test-mode-active .explanation-container,
+    body.test-mode-active .explanation-container,
+    body.test-mode-active #explanation-container {
+      display: none !important;
+    }
+    .test-mode-active .option-btn.selected-test {
+      background: #e2e8f0;
+      border-color: #2c5282;
+    }
+    
+    /* Horizontal Scroll for Explanations/Tables */
+    .explanation-html-content,
+    .question-html-content {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      max-width: 100%;
+    }
+    .explanation-html-content table,
+    .question-html-content table {
+      min-width: 600px;
+      display: block;
+      overflow-x: auto;
+    }
+    .table-scroll-wrapper {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin: 1rem 0;
+    }
+    .table-scroll-wrapper table {
+      min-width: 500px;
+    }
+    
+    /* Mobile-Friendly Improvements */
+    @media (max-width: 768px) {
+      .quiz-timer {
+        top: auto;
+        bottom: 70px;
+        right: 0.5rem;
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+      }
+      .file-selector,
+      .mode-selector {
+        padding: 1rem;
+      }
+      .file-item {
+        padding: 0.875rem;
+      }
+      .mode-option {
+        padding: 1rem;
+      }
+      .mode-option i {
+        font-size: 1.5rem;
+      }
+    }
   </style>
 </head>
 <body>
@@ -120,13 +335,46 @@
     </div>
 
     <div id="file-selector-container" class="brain-main-container" style="display: none;">
+      <!-- Global Search -->
+      <div class="global-search-container">
+        <div class="global-search-bar">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Search all topics and articles..." id="globalSearchInput" oninput="handleGlobalSearch(event)">
+        </div>
+        <div class="search-results" id="searchResults"></div>
+      </div>
+      
       <div class="file-selector">
         <h3><i class="fas fa-file-alt"></i> Select a Quiz File</h3>
         <div class="file-list" id="fileList"></div>
-        <button class="start-quiz-btn" id="startQuizBtn" onclick="startSelectedQuiz()" disabled>
-          <i class="fas fa-play"></i> Start Quiz
-        </button>
       </div>
+      
+      <!-- Mode Selector -->
+      <div class="mode-selector">
+        <h3><i class="fas fa-cog"></i> Select Quiz Mode</h3>
+        <div class="mode-options">
+          <div class="mode-option selected" data-mode="normal" onclick="selectMode('normal')">
+            <i class="fas fa-book-open"></i>
+            <div class="mode-title">Normal Mode</div>
+            <div class="mode-desc">See answers immediately after each question with explanations</div>
+          </div>
+          <div class="mode-option" data-mode="test" onclick="selectMode('test')">
+            <i class="fas fa-clock"></i>
+            <div class="mode-title">Test Mode</div>
+            <div class="mode-desc">Timed quiz: 1 minute per question. See results only at the end</div>
+          </div>
+        </div>
+      </div>
+      
+      <button class="start-quiz-btn" id="startQuizBtn" onclick="startSelectedQuiz()" disabled>
+        <i class="fas fa-play"></i> Start Quiz
+      </button>
+    </div>
+    
+    <!-- Timer for Test Mode -->
+    <div id="quizTimer" class="quiz-timer" style="display: none;">
+      <i class="fas fa-clock"></i>
+      <span id="timerDisplay">00:00</span>
     </div>
 
     <div id="quiz-container" class="quiz-container" style="display: none;">
@@ -189,6 +437,180 @@
     let pathString = '';
     let availableFiles = [];
     let selectedFileIndex = -1;
+    let quizMode = 'normal'; // 'normal' or 'test'
+    let timerInterval = null;
+    let totalTimeSeconds = 0;
+    let remainingTimeSeconds = 0;
+    let allManifestFiles = []; // For global search
+    
+    // Mode selection
+    function selectMode(mode) {
+      // Cleanup any previous quiz state
+      cleanupQuizState();
+      
+      quizMode = mode;
+      document.querySelectorAll('.mode-option').forEach(el => {
+        el.classList.toggle('selected', el.dataset.mode === mode);
+      });
+    }
+    
+    // Cleanup function to reset quiz state
+    function cleanupQuizState() {
+      stopTimer();
+      document.getElementById('quiz-container').classList.remove('test-mode-active');
+      document.body.classList.remove('test-mode-active');
+      document.getElementById('explanation-container').style.display = 'none';
+    }
+    
+    // Timer functions
+    function startTimer() {
+      if (quizMode !== 'test' || !currentQuiz) return;
+      
+      // Clear any existing timer first
+      stopTimer();
+      
+      // Compute fresh duration: 1 minute per question
+      totalTimeSeconds = currentQuiz.length * 60;
+      remainingTimeSeconds = totalTimeSeconds;
+      
+      document.getElementById('quizTimer').style.display = 'flex';
+      document.getElementById('quiz-container').classList.add('test-mode-active');
+      document.body.classList.add('test-mode-active');
+      
+      // Ensure explanation container is hidden in test mode
+      document.getElementById('explanation-container').style.display = 'none';
+      
+      updateTimerDisplay();
+      
+      timerInterval = setInterval(() => {
+        remainingTimeSeconds--;
+        updateTimerDisplay();
+        
+        if (remainingTimeSeconds <= 0) {
+          stopTimer();
+          // Show time's up alert and auto-submit
+          alert('Time is up! Submitting your answers.');
+          finishTestMode();
+        }
+      }, 1000);
+    }
+    
+    function updateTimerDisplay() {
+      const minutes = Math.floor(remainingTimeSeconds / 60);
+      const seconds = remainingTimeSeconds % 60;
+      const display = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+      document.getElementById('timerDisplay').textContent = display;
+      
+      const timerEl = document.getElementById('quizTimer');
+      const percentRemaining = remainingTimeSeconds / totalTimeSeconds;
+      
+      timerEl.classList.remove('warning', 'danger');
+      if (percentRemaining <= 0.1) {
+        timerEl.classList.add('danger');
+      } else if (percentRemaining <= 0.25) {
+        timerEl.classList.add('warning');
+      }
+    }
+    
+    function stopTimer() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+      document.getElementById('quizTimer').style.display = 'none';
+      // Reset timer state
+      remainingTimeSeconds = 0;
+      totalTimeSeconds = 0;
+    }
+    
+    function finishTestMode() {
+      stopTimer();
+      document.getElementById('quiz-container').classList.remove('test-mode-active');
+      document.body.classList.remove('test-mode-active');
+      
+      // Calculate final score from test mode answers (only at submission)
+      if (currentQuiz) {
+        score = 0;
+        currentQuiz.forEach((q, index) => {
+          if (userAnswers[index] === q.correct_answer) {
+            score++;
+          }
+        });
+      }
+      showQuizResults();
+    }
+    
+    // Global Search
+    async function loadManifestForSearch() {
+      try {
+        const response = await fetch('./file-manifest.json');
+        if (response.ok) {
+          const manifest = await response.json();
+          allManifestFiles = [];
+          
+          if (manifest.folders) {
+            for (const [folderPath, folderData] of Object.entries(manifest.folders)) {
+              if (folderData.files && Array.isArray(folderData.files)) {
+                folderData.files.forEach(fileName => {
+                  allManifestFiles.push({
+                    name: fileName.replace('.json', '').replace(/_/g, ' '),
+                    path: `./${folderPath}/${fileName}`,
+                    folderPath: folderPath,
+                    type: folderData.type || 'quiz'
+                  });
+                });
+              }
+            }
+          }
+        }
+      } catch (e) {
+        console.log('Could not load manifest for search');
+      }
+    }
+    
+    function handleGlobalSearch(event) {
+      const query = event.target.value.toLowerCase().trim();
+      const resultsContainer = document.getElementById('searchResults');
+      
+      if (query.length < 2) {
+        resultsContainer.classList.remove('active');
+        return;
+      }
+      
+      const filtered = allManifestFiles.filter(file => 
+        file.name.toLowerCase().includes(query) ||
+        file.folderPath.toLowerCase().includes(query)
+      );
+      
+      if (filtered.length === 0) {
+        resultsContainer.innerHTML = '<div class="search-result-item"><span>No results found</span></div>';
+        resultsContainer.classList.add('active');
+        return;
+      }
+      
+      resultsContainer.innerHTML = filtered.slice(0, 10).map(file => `
+        <div class="search-result-item" onclick="openSearchResult('${encodeURIComponent(file.path)}', '${file.type}', '${encodeURIComponent(file.folderPath)}')">
+          <i class="fas ${file.type === 'article' ? 'fa-file-medical-alt' : 'fa-question-circle'}"></i>
+          <div>
+            <div class="result-title">${file.name}</div>
+            <div class="result-path">${file.folderPath}</div>
+          </div>
+        </div>
+      `).join('');
+      resultsContainer.classList.add('active');
+    }
+    
+    function openSearchResult(path, type, folderPathEncoded) {
+      const decodedPath = decodeURIComponent(path);
+      const decodedFolderPath = decodeURIComponent(folderPathEncoded);
+      const fileName = decodedPath.split('/').pop().replace('.json', '').replace(/_/g, ' ');
+      
+      if (type === 'article') {
+        window.location.href = `article.html?folder=${encodeURIComponent(fileName)}&folderPath=${encodeURIComponent(decodedFolderPath)}`;
+      } else {
+        window.location.href = `quiz.html?folder=${encodeURIComponent(fileName)}&folderPath=${encodeURIComponent(decodedFolderPath)}`;
+      }
+    }
 
     function goBackToFolder() {
       if (pathString) {
@@ -216,7 +638,7 @@
       }
 
       document.getElementById('pageTitle').textContent = folderName;
-      document.getElementById('quizInfo').textContent = 'Brain And Scalpel Quiz';
+      document.getElementById('quizInfo').textContent = 'Nextpulse Quiz';
 
       await findAndLoadQuestions();
     }
@@ -340,6 +762,9 @@
       document.getElementById('loading').style.display = 'none';
       document.getElementById('file-selector-container').style.display = 'block';
       
+      // Load manifest for global search
+      loadManifestForSearch();
+      
       const fileList = document.getElementById('fileList');
       fileList.innerHTML = files.map((file, index) => {
         const displayName = file.name.replace(/.json$/, '').replace(/_/g, ' ');
@@ -364,6 +789,9 @@
 
     async function startSelectedQuiz() {
       if (selectedFileIndex < 0 || !availableFiles[selectedFileIndex]) return;
+      
+      // Cleanup any previous quiz state before starting
+      cleanupQuizState();
       
       document.getElementById('file-selector-container').style.display = 'none';
       document.getElementById('loading').style.display = 'block';
@@ -406,6 +834,11 @@
       userAnswers = new Array(currentQuiz.length).fill(null);
       score = 0;
       loadQuestion();
+      
+      // Start timer if in test mode
+      if (quizMode === 'test') {
+        startTimer();
+      }
     }
 
     function normalizeQuestion(q, index) {
@@ -504,6 +937,12 @@
         Object.entries(question.options).forEach(([key, value]) => {
           const button = document.createElement('button');
           button.className = 'option-btn';
+          
+          // In test mode, show previously selected answer
+          if (quizMode === 'test' && userAnswers[currentQuestionIndex] === key) {
+            button.classList.add('selected-test');
+          }
+          
           button.onclick = () => selectOption(key, button);
           button.innerHTML = `
             <span class="option-label">${key}</span>
@@ -513,14 +952,92 @@
         });
       }
 
+      // Always hide explanation when loading a new question
       document.getElementById('explanation-container').style.display = 'none';
+      
+      // Defensive: Ensure test mode classes are maintained during quiz
+      if (quizMode === 'test') {
+        document.body.classList.add('test-mode-active');
+        document.getElementById('quiz-container').classList.add('test-mode-active');
+      }
+      
       updateBookmarkButton();
+      
+      // In test mode, add navigation buttons
+      if (quizMode === 'test') {
+        addTestModeNavigation();
+      }
+    }
+    
+    function addTestModeNavigation() {
+      const quizContainer = document.getElementById('quiz-container');
+      
+      // Remove existing navigation if any
+      const existingNav = quizContainer.querySelector('.test-mode-nav');
+      if (existingNav) existingNav.remove();
+      
+      const navContainer = document.createElement('div');
+      navContainer.className = 'test-mode-nav';
+      navContainer.style.cssText = 'display: flex; justify-content: space-between; gap: 1rem; padding: 1rem; margin-top: 1rem;';
+      
+      const prevBtn = document.createElement('button');
+      prevBtn.className = 'nav-btn secondary';
+      prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i> Previous';
+      prevBtn.style.cssText = 'flex: 1; padding: 0.75rem 1rem; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; background: #e2e8f0; color: #2d3748;';
+      prevBtn.disabled = currentQuestionIndex === 0;
+      prevBtn.onclick = () => {
+        if (currentQuestionIndex > 0) {
+          currentQuestionIndex--;
+          loadQuestion();
+        }
+      };
+      
+      const nextBtn = document.createElement('button');
+      nextBtn.className = 'nav-btn primary';
+      nextBtn.style.cssText = 'flex: 1; padding: 0.75rem 1rem; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; background: #2c5282; color: white;';
+      
+      if (currentQuestionIndex === currentQuiz.length - 1) {
+        nextBtn.innerHTML = '<i class="fas fa-check"></i> Finish Quiz';
+        nextBtn.onclick = finishTestMode;
+      } else {
+        nextBtn.innerHTML = 'Next <i class="fas fa-chevron-right"></i>';
+        nextBtn.onclick = () => {
+          currentQuestionIndex++;
+          loadQuestion();
+        };
+      }
+      
+      navContainer.appendChild(prevBtn);
+      navContainer.appendChild(nextBtn);
+      quizContainer.appendChild(navContainer);
     }
 
     function selectOption(selectedOption, buttonElement) {
       const question = currentQuiz[currentQuestionIndex];
       const correctAnswer = question.correct_answer;
       
+      userAnswers[currentQuestionIndex] = selectedOption;
+      
+      if (quizMode === 'test') {
+        // Test mode: just mark selection visually, NO SCORING until end
+        const allOptions = document.querySelectorAll('.option-btn');
+        allOptions.forEach(btn => {
+          btn.classList.remove('selected-test');
+          const optionLabel = btn.querySelector('.option-label').textContent;
+          if (optionLabel === selectedOption) {
+            btn.classList.add('selected-test');
+          }
+        });
+        
+        // Ensure explanation remains hidden in test mode
+        document.getElementById('explanation-container').style.display = 'none';
+        
+        // Do NOT auto-navigate, let user use navigation buttons
+        // This allows them to review/change answers
+        return; // Exit early - no scoring in test mode during selection
+      }
+      
+      // Normal mode only: show correct/incorrect and explanation
       const allOptions = document.querySelectorAll('.option-btn');
       allOptions.forEach(btn => {
         btn.disabled = true;
@@ -536,8 +1053,7 @@
         }
       });
       
-      userAnswers[currentQuestionIndex] = selectedOption;
-      
+      // Normal mode scoring
       if (selectedOption === correctAnswer) {
         score++;
       }
