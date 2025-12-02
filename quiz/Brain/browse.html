@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Browse - Brain And Scalpel</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="stylesheet" href="../qbank-main.css">
+  <link rel="stylesheet" href="brain-styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <script src="../../access-control.js"></script>
+  <script src="../../block.js"></script>
+  <script src="../../error-handler/link-checker.js"></script>
+</head>
+<body>
+  <script>
+    if (!accessControl.initProtectedPage()) {
+      throw new Error('Access denied - redirecting to index.html');
+    }
+  </script>
+  
+  <header>
+    <div class="header-content">
+      <button onclick="goBack()" class="back-button" style="display: block;">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <h1 id="pageTitle">Loading...</h1>
+      <p class="header-subtitle" id="pageSubtitle">Browse categories</p>
+    </div>
+  </header>
+
+  <main>
+    <div class="brain-main-container">
+      <div id="breadcrumbContainer"></div>
+
+      <div class="search-container">
+        <div class="search-bar-brain">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Search in this category..." id="searchInput">
+        </div>
+      </div>
+
+      <div class="categories-grid" id="categoriesGrid">
+        <div class="loading-spinner">
+          <i class="fas fa-spinner fa-spin"></i>
+          <p>Loading...</p>
+        </div>
+      </div>
+    </div>
+  </main>
+  
+  <nav class="bottom-nav">
+    <a href="../../app.html"><i class="fas fa-lightbulb"></i><span>Home</span></a>
+    <a href="../../00x1234.html"><i class="fas fa-play-circle"></i><span>Videos</span></a>
+    <a href="../../search.html"><i class="fas fa-search"></i><span>Search</span></a>
+    <a href="../index.html" class="active"><i class="fas fa-question-circle"></i><span>Q Bank</span></a>
+  </nav>
+
+  <script src="brain.js"></script>
+  <script>
+    async function initBrowsePage() {
+      initPathFromURL();
+
+      const metadata = await loadMetadata();
+      if (!metadata) {
+        document.getElementById('categoriesGrid').innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-exclamation-triangle"></i>
+            <p>Failed to load data. Please try again.</p>
+          </div>
+        `;
+        return;
+      }
+
+      const current = getCurrentItem();
+      if (!current) {
+        document.getElementById('categoriesGrid').innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-exclamation-triangle"></i>
+            <p>Category not found. Please go back and try again.</p>
+          </div>
+        `;
+        return;
+      }
+
+      document.getElementById('pageTitle').textContent = current.name;
+      
+      const statsText = [];
+      if (current.stats && current.stats.sub_folders > 0) {
+        statsText.push(`${current.stats.sub_folders} folders`);
+      }
+      if (current.stats && current.stats.questions > 0) {
+        statsText.push(`${formatNumber(current.stats.questions)} questions`);
+      }
+      if (current.stats && current.stats.articles > 0) {
+        statsText.push(`${formatNumber(current.stats.articles)} articles`);
+      }
+      document.getElementById('pageSubtitle').textContent = statsText.join(' | ') || 'Browse content';
+
+      document.getElementById('breadcrumbContainer').innerHTML = renderBreadcrumb();
+
+      renderCategories(current.children || []);
+    }
+
+    document.addEventListener('DOMContentLoaded', initBrowsePage);
+
+    document.getElementById('searchInput').addEventListener('input', function(e) {
+      const query = e.target.value.toLowerCase();
+      const cards = document.querySelectorAll('.category-card, .content-folder-card');
+      cards.forEach(card => {
+        const text = card.textContent.toLowerCase();
+        card.style.display = text.includes(query) ? 'flex' : 'none';
+      });
+    });
+  </script>
+</body>
+</html>
