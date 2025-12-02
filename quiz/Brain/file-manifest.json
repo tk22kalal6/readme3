@@ -9,10 +9,22 @@
         "00236_Late_Night_Pyqs_Inicet_-_1.json"
       ]
     },
+    "Cerebellum/Mock Test/Late Night PYQ (INICET)": {
+      "type": "quiz",
+      "files": [
+        "00236_Late_Night_Pyqs_Inicet_-_1.json"
+      ]
+    },
     "Amboss (Article)/Dermatology/Basics Of Dermatology": {
       "type": "article",
       "files": [
         "Acid-base_disorders.json"
+      ]
+    },
+    "Amboss (Article)/Dermatology/Basics Of Dermatology": {
+      "type": "article",
+      "files": [
+        "Wound_healing.json"
       ]
     }
   },
