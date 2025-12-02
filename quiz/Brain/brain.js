@@ -285,7 +285,7 @@ function navigateToBreadcrumb(index) {
 function getBreadcrumbPath() {
   if (!brainMetadata) return [];
   
-  const path = [{ name: 'Brain And Scalpel', index: -1 }];
+  const path = [{ name: 'Nextpulse', index: -1 }];
   let current = brainMetadata;
   
   for (let i = 0; i < currentPath.length; i++) {
