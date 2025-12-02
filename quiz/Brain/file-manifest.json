@@ -1,0 +1,30 @@
+{
+  "version": "1.0",
+  "lastUpdated": "2025-12-02",
+  "description": "Registry of JSON files for MCQ and Article content. Add new folders and files here.",
+  "folders": {
+    "Cerebellum/Mock Test": {
+      "type": "quiz",
+      "files": [
+        "Late Night PYQ (INICET)00236_Late_Night_Pyqs_Inicet_-_1.json"
+      ]
+    },
+    "Amboss (Article)/Dermatology": {
+      "type": "article",
+      "files": [
+        "Acid-base_disorders.json"
+      ]
+    }
+  },
+  "instructions": {
+    "adding_files": "To add new files, first upload them to the appropriate folder, then add an entry here with the exact folder path and file name.",
+    "folder_path_format": "Use the exact folder names as they appear in the website_metadata.json, joined by forward slashes.",
+    "supported_types": ["quiz", "article"],
+    "example": {
+      "Subject/Topic Name": {
+        "type": "quiz",
+        "files": ["file1.json", "file2.json"]
+      }
+    }
+  }
+}
