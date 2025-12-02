@@ -43,6 +43,55 @@ function getCurrentItem() {
   return current;
 }
 
+function buildFolderPath(pathIndices) {
+  if (!brainMetadata) return '';
+  
+  let current = brainMetadata;
+  const pathNames = [];
+  
+  for (const index of pathIndices) {
+    if (current.children && current.children[index]) {
+      current = current.children[index];
+      pathNames.push(current.name);
+    }
+  }
+  
+  return pathNames.join('/');
+}
+
+function isArticleFolder(pathIndices) {
+  if (!brainMetadata) return false;
+  
+  let current = brainMetadata;
+  for (const index of pathIndices) {
+    if (current.children && current.children[index]) {
+      current = current.children[index];
+      if (current.name.toLowerCase().includes('article') || 
+          (current.stats && current.stats.articles > 0 && current.stats.questions === 0)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+function getContentType(item, pathIndices) {
+  if (item.stats) {
+    if (item.stats.articles > 0 && item.stats.questions === 0) {
+      return 'article';
+    }
+    if (item.stats.questions > 0) {
+      return 'quiz';
+    }
+  }
+  
+  if (isArticleFolder(pathIndices)) {
+    return 'article';
+  }
+  
+  return 'quiz';
+}
+
 function getIconForCategory(name) {
   const iconMap = {
     'AMBOSS qBANK': 'fas fa-book-medical',
@@ -73,6 +122,8 @@ function getIconForCategory(name) {
     'Pulmonology': 'fas fa-lungs',
     'Nephrology': 'fas fa-filter',
     'Infectious Diseases': 'fas fa-virus',
+    'Cerebellum': 'fas fa-brain',
+    'Mock Test': 'fas fa-clipboard-list',
     'default': 'fas fa-folder'
   };
 
@@ -94,7 +145,11 @@ function formatNumber(num) {
 function createCategoryCard(item, index) {
   const isContentFolder = item.type === 'Content Folder';
   const cardClass = isContentFolder ? 'content-folder-card' : 'category-card';
-  const icon = isContentFolder ? 'fas fa-file-alt' : getIconForCategory(item.name);
+  
+  const isArticle = item.stats && item.stats.articles > 0 && item.stats.questions === 0;
+  const icon = isContentFolder 
+    ? (isArticle ? 'fas fa-file-medical-alt' : 'fas fa-file-alt')
+    : getIconForCategory(item.name);
   
   const statsHtml = [];
   if (item.stats.sub_folders > 0) {
@@ -194,7 +249,15 @@ function openContentFolder(item, itemIndex) {
     pathToFolder.push(itemIndex);
   }
   const pathString = pathToFolder.join(',');
-  window.location.href = `quiz.html?folder=${encodeURIComponent(item.name)}&path=${pathString}`;
+  
+  const folderPath = buildFolderPath(pathToFolder);
+  const contentType = getContentType(item, pathToFolder);
+  
+  if (contentType === 'article') {
+    window.location.href = `article.html?folder=${encodeURIComponent(item.name)}&folderPath=${encodeURIComponent(folderPath)}&path=${pathString}`;
+  } else {
+    window.location.href = `quiz.html?folder=${encodeURIComponent(item.name)}&folderPath=${encodeURIComponent(folderPath)}&path=${pathString}`;
+  }
 }
 
 function goBack() {
@@ -249,4 +312,26 @@ function renderBreadcrumb() {
   }).join('');
   
   return `<div class="breadcrumb">${breadcrumbHtml}</div>`;
+}
+
+async function listJsonFilesInFolder(folderPath) {
+  const files = [];
+  
+  try {
+    const testPaths = [
+      `./${folderPath}/`,
+      `./${encodeURIComponent(folderPath)}/`
+    ];
+    
+    return files;
+  } catch (error) {
+    console.error('Error listing files:', error);
+    return files;
+  }
+}
+
+function stripHtml(html) {
+  const temp = document.createElement('div');
+  temp.innerHTML = html;
+  return temp.textContent || temp.innerText || '';
 }
