@@ -11,6 +11,88 @@
   <script src="../../access-control.js"></script>
   <script src="../../block.js"></script>
   <script src="../../error-handler/link-checker.js"></script>
+  <style>
+    .file-selector {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+    .file-selector h3 {
+      margin-bottom: 1rem;
+      color: #2d3748;
+    }
+    .file-list {
+      display: grid;
+      gap: 0.75rem;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .file-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem;
+      background: #f7fafc;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: 2px solid transparent;
+    }
+    .file-item:hover {
+      background: #e2e8f0;
+      border-color: #2c5282;
+    }
+    .file-item.selected {
+      background: #2c5282;
+      color: white;
+      border-color: #1a365d;
+    }
+    .file-item i {
+      font-size: 1.25rem;
+    }
+    .file-item .file-name {
+      flex: 1;
+      font-weight: 500;
+    }
+    .file-item .file-count {
+      font-size: 0.85rem;
+      opacity: 0.8;
+    }
+    .start-quiz-btn {
+      width: 100%;
+      padding: 1rem;
+      background: #38a169;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 1rem;
+      transition: all 0.3s;
+    }
+    .start-quiz-btn:hover {
+      background: #2f855a;
+    }
+    .start-quiz-btn:disabled {
+      background: #a0aec0;
+      cursor: not-allowed;
+    }
+    .question-html-content img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      margin: 1rem 0;
+    }
+    .explanation-html-content img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      margin: 1rem 0;
+    }
+  </style>
 </head>
 <body>
   <script>
@@ -37,6 +119,16 @@
       </div>
     </div>
 
+    <div id="file-selector-container" class="brain-main-container" style="display: none;">
+      <div class="file-selector">
+        <h3><i class="fas fa-file-alt"></i> Select a Quiz File</h3>
+        <div class="file-list" id="fileList"></div>
+        <button class="start-quiz-btn" id="startQuizBtn" onclick="startSelectedQuiz()" disabled>
+          <i class="fas fa-play"></i> Start Quiz
+        </button>
+      </div>
+    </div>
+
     <div id="quiz-container" class="quiz-container" style="display: none;">
       <div class="question-container">
         <div class="quiz-progress" onclick="showQuestionNavigation()" style="cursor: pointer; user-select: none;" title="Click to navigate">
@@ -47,7 +139,7 @@
           <i class="far fa-bookmark"></i>
         </button>
         
-        <div id="question-text" class="question-text"></div>
+        <div id="question-text" class="question-text question-html-content"></div>
         <div id="question-image" class="question-image" style="display: none;">
           <img id="question-img" src="" alt="Question Image">
         </div>
@@ -57,7 +149,7 @@
 
       <div id="explanation-container" class="explanation-container" style="display: none;">
         <h3>Explanation:</h3>
-        <p id="explanation-text"></p>
+        <div id="explanation-text" class="explanation-html-content"></div>
         <div id="explanation-image" class="explanation-image" style="display: none;">
           <img id="explanation-img" src="" alt="Explanation Image">
         </div>
@@ -93,11 +185,20 @@
     let userAnswers = [];
     let score = 0;
     let folderName = '';
+    let folderPath = '';
     let pathString = '';
+    let availableFiles = [];
+    let selectedFileIndex = -1;
 
     function goBackToFolder() {
       if (pathString) {
-        window.location.href = `browse.html?path=${pathString}`;
+        const pathParts = pathString.split(',');
+        pathParts.pop();
+        if (pathParts.length > 0) {
+          window.location.href = `browse.html?path=${pathParts.join(',')}`;
+        } else {
+          window.location.href = 'index.html';
+        }
       } else {
         window.location.href = 'index.html';
       }
@@ -106,6 +207,7 @@
     async function loadQuiz() {
       const urlParams = new URLSearchParams(window.location.search);
       folderName = urlParams.get('folder') || '';
+      folderPath = urlParams.get('folderPath') || '';
       pathString = urlParams.get('path') || '';
 
       if (!folderName) {
@@ -116,70 +218,258 @@
       document.getElementById('pageTitle').textContent = folderName;
       document.getElementById('quizInfo').textContent = 'Brain And Scalpel Quiz';
 
-      await loadQuestionsFromFolder(folderName);
+      await findAndLoadQuestions();
     }
 
-    async function loadQuestionsFromFolder(folder) {
+    async function findAndLoadQuestions() {
+      let foundFiles = [];
+      
       try {
-        const fileName = folder.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_-]/g, '') + '.json';
-        const response = await fetch(`./${fileName}`);
-        
-        if (!response.ok) {
-          const sampleQuestions = generateSampleQuestions(folder);
-          currentQuiz = sampleQuestions;
-          currentQuestionIndex = 0;
-          userAnswers = new Array(currentQuiz.length).fill(null);
-          score = 0;
-          loadQuestion();
-          return;
+        const manifestResponse = await fetch('./file-manifest.json');
+        if (manifestResponse.ok) {
+          const manifest = await manifestResponse.json();
+          
+          if (manifest.folders && folderPath && manifest.folders[folderPath]) {
+            const folderData = manifest.folders[folderPath];
+            foundFiles = folderData.files.map(fileName => ({
+              name: fileName.replace('.json', '').replace(/_/g, ' '),
+              path: `./${folderPath}/${fileName}`
+            }));
+          }
         }
+      } catch (e) {
+        console.log('Manifest not found, trying direct file access');
+      }
 
-        const data = await response.json();
-        
-        if (data.questions && data.questions.length > 0) {
-          currentQuiz = data.questions;
-        } else if (Array.isArray(data) && data.length > 0) {
-          currentQuiz = data;
-        } else {
-          throw new Error('No questions found');
+      if (foundFiles.length === 0) {
+        const possiblePaths = [];
+        if (folderPath) {
+          possiblePaths.push(`./${folderPath}/`);
         }
+        const sanitizedName = folderName.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_-]/g, '');
+        possiblePaths.push(`./${folderName}/`);
+        possiblePaths.push(`./${sanitizedName}/`);
+        
+        for (const basePath of possiblePaths) {
+          try {
+            const files = await scanForJsonFiles(basePath);
+            if (files.length > 0) {
+              foundFiles = files;
+              break;
+            }
+          } catch (e) {
+            console.log(`No files found at ${basePath}`);
+          }
+        }
+      }
 
-        currentQuestionIndex = 0;
-        userAnswers = new Array(currentQuiz.length).fill(null);
-        score = 0;
-        loadQuestion();
+      if (foundFiles.length === 0) {
+        const directJsonPaths = [
+          `./${folderPath}.json`,
+          `./${folderName}.json`,
+          `./${folderName.replace(/\s+/g, '_')}.json`
+        ];
+        
+        for (const jsonPath of directJsonPaths) {
+          try {
+            const response = await fetch(jsonPath);
+            if (response.ok) {
+              const data = await response.json();
+              await processQuizData(data, jsonPath);
+              return;
+            }
+          } catch (e) {
+            console.log(`No file at ${jsonPath}`);
+          }
+        }
+      }
 
-      } catch (error) {
-        console.error('Error loading questions:', error);
-        const sampleQuestions = generateSampleQuestions(folder);
-        currentQuiz = sampleQuestions;
-        currentQuestionIndex = 0;
-        userAnswers = new Array(currentQuiz.length).fill(null);
-        score = 0;
-        loadQuestion();
+      if (foundFiles.length === 1) {
+        await loadQuizFromFile(foundFiles[0]);
+      } else if (foundFiles.length > 1) {
+        showFileSelector(foundFiles);
+      } else {
+        showError(`No quiz files found in folder: ${folderName}. Please upload JSON files to the ${folderPath || folderName} folder and update the file-manifest.json.`);
       }
     }
 
-    function generateSampleQuestions(folder) {
-      return [
-        {
-          q_no: 1,
-          question: `This is a sample question for ${folder}. The actual questions will be loaded from JSON files when available.`,
-          options: {
-            A: 'Sample Option A',
-            B: 'Sample Option B',
-            C: 'Sample Option C',
-            D: 'Sample Option D'
-          },
-          correct_answer: 'A',
-          explanation: `This is a sample explanation. To add real questions, create a JSON file named "${folder.replace(/\s+/g, '_')}.json" in the quiz/Brain folder with the proper question format.`
+    async function scanForJsonFiles(basePath) {
+      const files = [];
+      
+      const knownFiles = await getKnownJsonFiles(basePath);
+      
+      for (const fileName of knownFiles) {
+        try {
+          const fullPath = basePath + fileName;
+          const response = await fetch(fullPath, { method: 'HEAD' });
+          if (response.ok) {
+            files.push({ name: fileName, path: fullPath });
+          }
+        } catch (e) {
         }
+      }
+      
+      return files;
+    }
+
+    async function getKnownJsonFiles(basePath) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const folderPath = urlParams.get('folderPath') || '';
+      
+      const testFiles = [];
+      
+      const commonPatterns = [
+        'questions.json',
+        'quiz.json',
+        'data.json',
+        'index.json'
       ];
+      
+      const pathParts = folderPath.split('/');
+      const lastFolder = pathParts[pathParts.length - 1];
+      if (lastFolder) {
+        testFiles.push(`${lastFolder}.json`);
+        testFiles.push(`${lastFolder.replace(/\s+/g, '_')}.json`);
+      }
+      
+      return [...testFiles, ...commonPatterns];
+    }
+
+    function showFileSelector(files) {
+      availableFiles = files;
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('file-selector-container').style.display = 'block';
+      
+      const fileList = document.getElementById('fileList');
+      fileList.innerHTML = files.map((file, index) => {
+        const displayName = file.name.replace(/.json$/, '').replace(/_/g, ' ');
+        return `
+          <div class="file-item" onclick="selectFile(${index})" data-index="${index}">
+            <i class="fas fa-file-alt"></i>
+            <span class="file-name">${displayName}</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function selectFile(index) {
+      selectedFileIndex = index;
+      
+      document.querySelectorAll('.file-item').forEach((item, i) => {
+        item.classList.toggle('selected', i === index);
+      });
+      
+      document.getElementById('startQuizBtn').disabled = false;
+    }
+
+    async function startSelectedQuiz() {
+      if (selectedFileIndex < 0 || !availableFiles[selectedFileIndex]) return;
+      
+      document.getElementById('file-selector-container').style.display = 'none';
+      document.getElementById('loading').style.display = 'block';
+      
+      await loadQuizFromFile(availableFiles[selectedFileIndex]);
+    }
+
+    async function loadQuizFromFile(fileInfo) {
+      try {
+        const response = await fetch(fileInfo.path);
+        if (!response.ok) {
+          throw new Error('Failed to load file');
+        }
+        const data = await response.json();
+        await processQuizData(data, fileInfo.path);
+      } catch (error) {
+        console.error('Error loading quiz:', error);
+        showError(`Failed to load quiz from: ${fileInfo.name}`);
+      }
+    }
+
+    async function processQuizData(data, sourcePath) {
+      let questions = [];
+      
+      if (data.questions && Array.isArray(data.questions)) {
+        questions = data.questions.map(normalizeQuestion);
+      } else if (Array.isArray(data)) {
+        questions = data.map(normalizeQuestion);
+      } else {
+        throw new Error('Invalid quiz data format');
+      }
+
+      if (questions.length === 0) {
+        showError('No questions found in the quiz file.');
+        return;
+      }
+
+      currentQuiz = questions;
+      currentQuestionIndex = 0;
+      userAnswers = new Array(currentQuiz.length).fill(null);
+      score = 0;
+      loadQuestion();
+    }
+
+    function normalizeQuestion(q, index) {
+      if (q.choices && Array.isArray(q.choices)) {
+        const options = {};
+        const optionLabels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+        let correctAnswer = '';
+        
+        q.choices.forEach((choice, i) => {
+          const label = optionLabels[i] || String(i + 1);
+          options[label] = stripHtml(choice.text || choice);
+          
+          if (choice.id === q.correct_choice_id) {
+            correctAnswer = label;
+          }
+        });
+        
+        return {
+          q_no: q.id || index + 1,
+          question: stripHtml(q.text || q.question || ''),
+          options: options,
+          correct_answer: correctAnswer,
+          explanation: q.solution || q.explanation || '',
+          image: extractImageFromHtml(q.text) || (q.question_images && q.question_images[0]) || null,
+          explanation_image: extractImageFromHtml(q.solution) || (q.explanation_images && q.explanation_images[0]) || null,
+          tags: q.tags || [],
+          difficulty: q.difficulty_level || 'intermediate'
+        };
+      }
+      
+      if (q.options && typeof q.options === 'object') {
+        return {
+          q_no: q.q_no || q.id || index + 1,
+          question: q.question || '',
+          options: q.options,
+          correct_answer: q.correct_answer || '',
+          explanation: q.explanation || '',
+          image: q.image || null,
+          explanation_image: q.explanation_image || null,
+          tags: q.tags || [],
+          difficulty: q.difficulty || 'intermediate'
+        };
+      }
+      
+      return q;
+    }
+
+    function stripHtml(html) {
+      if (!html) return '';
+      const temp = document.createElement('div');
+      temp.innerHTML = html;
+      return temp.textContent || temp.innerText || '';
+    }
+
+    function extractImageFromHtml(html) {
+      if (!html) return null;
+      const match = html.match(/<img[^>]+src=["']([^"']+)["']/i);
+      return match ? match[1] : null;
     }
 
     function showError(message) {
       document.getElementById('loading').style.display = 'none';
       document.getElementById('quiz-container').style.display = 'none';
+      document.getElementById('file-selector-container').style.display = 'none';
       document.getElementById('error-container').style.display = 'block';
       document.getElementById('error-message').textContent = message;
     }
@@ -188,6 +478,7 @@
       if (!currentQuiz || currentQuiz.length === 0) return;
 
       document.getElementById('loading').style.display = 'none';
+      document.getElementById('file-selector-container').style.display = 'none';
       document.getElementById('quiz-container').style.display = 'block';
       document.getElementById('error-container').style.display = 'none';
 
@@ -195,7 +486,7 @@
       document.getElementById('current-question').textContent = currentQuestionIndex + 1;
       document.getElementById('total-questions').textContent = currentQuiz.length;
       
-      document.getElementById('question-text').textContent = `${question.q_no || (currentQuestionIndex + 1)}. ${question.question}`;
+      document.getElementById('question-text').innerHTML = `<strong>Q${question.q_no || (currentQuestionIndex + 1)}.</strong> ${question.question}`;
 
       const questionImageDiv = document.getElementById('question-image');
       const questionImg = document.getElementById('question-img');
@@ -263,7 +554,7 @@
       const explanationImageDiv = document.getElementById('explanation-image');
       const explanationImg = document.getElementById('explanation-img');
       
-      explanationText.textContent = question.explanation || 'No explanation available.';
+      explanationText.innerHTML = question.explanation || 'No explanation available.';
       
       if (question.explanation_image) {
         explanationImg.src = question.explanation_image;
