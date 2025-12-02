@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Browse - Brain And Scalpel</title>
+  <title>Browse - Nextpulse</title>
   <link rel="stylesheet" href="../../styles.css">
   <link rel="stylesheet" href="../qbank-main.css">
   <link rel="stylesheet" href="brain-styles.css">
@@ -33,6 +33,15 @@
     <div class="brain-main-container">
       <div id="breadcrumbContainer"></div>
 
+      <!-- Global Search -->
+      <div class="global-search-container">
+        <div class="global-search-bar">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Search all topics and articles..." id="globalSearchInput" oninput="handleGlobalSearch(event)">
+        </div>
+        <div class="search-results" id="searchResults"></div>
+      </div>
+      
       <div class="search-container">
         <div class="search-bar-brain">
           <i class="fas fa-search"></i>
@@ -58,6 +67,80 @@
 
   <script src="brain.js"></script>
   <script>
+    let allManifestFiles = []; // For global search
+    
+    // Global Search
+    async function loadManifestForSearch() {
+      try {
+        const response = await fetch('./file-manifest.json');
+        if (response.ok) {
+          const manifest = await response.json();
+          allManifestFiles = [];
+          
+          if (manifest.folders) {
+            for (const [folderPath, folderData] of Object.entries(manifest.folders)) {
+              if (folderData.files && Array.isArray(folderData.files)) {
+                folderData.files.forEach(fileName => {
+                  allManifestFiles.push({
+                    name: fileName.replace('.json', '').replace(/_/g, ' '),
+                    path: `./${folderPath}/${fileName}`,
+                    folderPath: folderPath,
+                    type: folderData.type || 'quiz'
+                  });
+                });
+              }
+            }
+          }
+        }
+      } catch (e) {
+        console.log('Could not load manifest for search');
+      }
+    }
+    
+    function handleGlobalSearch(event) {
+      const query = event.target.value.toLowerCase().trim();
+      const resultsContainer = document.getElementById('searchResults');
+      
+      if (query.length < 2) {
+        resultsContainer.classList.remove('active');
+        return;
+      }
+      
+      const filtered = allManifestFiles.filter(file => 
+        file.name.toLowerCase().includes(query) ||
+        file.folderPath.toLowerCase().includes(query)
+      );
+      
+      if (filtered.length === 0) {
+        resultsContainer.innerHTML = '<div class="search-result-item"><span>No results found</span></div>';
+        resultsContainer.classList.add('active');
+        return;
+      }
+      
+      resultsContainer.innerHTML = filtered.slice(0, 10).map(file => `
+        <div class="search-result-item" onclick="openSearchResult('${encodeURIComponent(file.path)}', '${file.type}', '${encodeURIComponent(file.folderPath)}')">
+          <i class="fas ${file.type === 'article' ? 'fa-file-medical-alt' : 'fa-question-circle'}"></i>
+          <div>
+            <div class="result-title">${file.name}</div>
+            <div class="result-path">${file.folderPath}</div>
+          </div>
+        </div>
+      `).join('');
+      resultsContainer.classList.add('active');
+    }
+    
+    function openSearchResult(path, type, folderPathEncoded) {
+      const decodedPath = decodeURIComponent(path);
+      const decodedFolderPath = decodeURIComponent(folderPathEncoded);
+      const fileName = decodedPath.split('/').pop().replace('.json', '').replace(/_/g, ' ');
+      
+      if (type === 'article') {
+        window.location.href = `article.html?folder=${encodeURIComponent(fileName)}&folderPath=${encodeURIComponent(decodedFolderPath)}`;
+      } else {
+        window.location.href = `quiz.html?folder=${encodeURIComponent(fileName)}&folderPath=${encodeURIComponent(decodedFolderPath)}`;
+      }
+    }
+    
     async function initBrowsePage() {
       initPathFromURL();
 
@@ -102,7 +185,10 @@
       renderCategories(current.children || []);
     }
 
-    document.addEventListener('DOMContentLoaded', initBrowsePage);
+    document.addEventListener('DOMContentLoaded', function() {
+      initBrowsePage();
+      loadManifestForSearch();
+    });
 
     document.getElementById('searchInput').addEventListener('input', function(e) {
       const query = e.target.value.toLowerCase();
