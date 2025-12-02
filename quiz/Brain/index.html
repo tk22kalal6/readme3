@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Brain And Scalpel - Q Bank</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <link rel="stylesheet" href="../qbank-main.css">
+  <link rel="stylesheet" href="brain-styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <script src="../../access-control.js"></script>
+  <script src="../../block.js"></script>
+  <script src="../../error-handler/link-checker.js"></script>
+</head>
+<body>
+  <script>
+    if (!accessControl.initProtectedPage()) {
+      throw new Error('Access denied - redirecting to index.html');
+    }
+  </script>
+  
+  <header>
+    <div class="header-content">
+      <button onclick="history.back()" class="back-button" style="display: block;">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <h1 id="pageTitle">Brain And Scalpel</h1>
+      <p class="header-subtitle">Comprehensive Medical Q-Bank</p>
+    </div>
+  </header>
+
+  <main>
+    <div class="brain-main-container">
+      <div class="stats-overview">
+        <div class="stat-card">
+          <i class="fas fa-folder"></i>
+          <div class="stat-info">
+            <span class="stat-value" id="totalFolders">11</span>
+            <span class="stat-label">Categories</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <i class="fas fa-question-circle"></i>
+          <div class="stat-info">
+            <span class="stat-value" id="totalQuestions">428K+</span>
+            <span class="stat-label">Questions</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <i class="fas fa-file-alt"></i>
+          <div class="stat-info">
+            <span class="stat-value" id="totalArticles">5.8K+</span>
+            <span class="stat-label">Articles</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="welcome-section">
+        <h2>Available Categories</h2>
+        <p>Select a category to explore</p>
+      </div>
+
+      <div class="search-container">
+        <div class="search-bar-brain">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Search categories..." id="searchInput">
+        </div>
+      </div>
+
+      <div class="categories-grid" id="categoriesGrid">
+        <div class="loading-spinner">
+          <i class="fas fa-spinner fa-spin"></i>
+          <p>Loading categories...</p>
+        </div>
+      </div>
+    </div>
+  </main>
+  
+  <nav class="bottom-nav">
+    <a href="../../app.html"><i class="fas fa-lightbulb"></i><span>Home</span></a>
+    <a href="../../00x1234.html"><i class="fas fa-play-circle"></i><span>Videos</span></a>
+    <a href="../../search.html"><i class="fas fa-search"></i><span>Search</span></a>
+    <a href="../index.html" class="active"><i class="fas fa-question-circle"></i><span>Q Bank</span></a>
+  </nav>
+
+  <script src="brain.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      loadMainCategories();
+    });
+
+    document.getElementById('searchInput').addEventListener('input', function(e) {
+      const query = e.target.value.toLowerCase();
+      const cards = document.querySelectorAll('.category-card');
+      cards.forEach(card => {
+        const text = card.textContent.toLowerCase();
+        card.style.display = text.includes(query) ? 'flex' : 'none';
+      });
+    });
+  </script>
+</body>
+</html>
