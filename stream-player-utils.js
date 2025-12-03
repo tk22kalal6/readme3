@@ -41,7 +41,7 @@ function extractPageContext() {
 }
 
 // Function to open the stream player with reCAPTCHA verification
-// jsonFileInfo is an optional object: { jsonPath: 'test3/clinicalguruji.json', platform: 'test3', subject: 'clinicalguruji' }
+// jsonFileInfo is an optional object: { jsonPath: 'test3/clinicalguruji.json', platform: 'test3', subject: 'clinicalguruji', streamUrlX: '...', downloadUrlX: '...' }
 function openStreamPlayer(streamUrl, downloadUrl, title, platform, subject, jsonFileInfo) {
     console.log('===== openStreamPlayer called =====');
     console.log('Parameters received:', { streamUrl, downloadUrl, title, platform, subject, jsonFileInfo });
@@ -64,6 +64,14 @@ function openStreamPlayer(streamUrl, downloadUrl, title, platform, subject, json
     // Add download URL if available
     if (downloadUrl) {
         params.append('download', downloadUrl);
+    }
+    
+    // Add Server 2 URLs if available (streamingUrlx and downloadUrlx)
+    if (jsonFileInfo && jsonFileInfo.streamUrlX) {
+        params.append('streamx', jsonFileInfo.streamUrlX);
+    }
+    if (jsonFileInfo && jsonFileInfo.downloadUrlX) {
+        params.append('downloadx', jsonFileInfo.downloadUrlX);
     }
     
     // Method 1: Use explicit jsonFileInfo if provided (most reliable)
