@@ -35,33 +35,303 @@
     .file-item {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 0.75rem;
+      padding: 0.875rem 1rem;
+      background: #f7fafc;
+      border-radius: 10px;
+      transition: all 0.2s;
+      border: 1px solid #e2e8f0;
+    }
+    .file-item:hover {
+      background: #edf2f7;
+      border-color: #cbd5e0;
+    }
+    .file-item .file-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #2c5282 0%, #3182ce 100%);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .file-item .file-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .file-item .file-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: #2d3748;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .file-item .file-meta {
+      font-size: 0.8rem;
+      color: #718096;
+      margin-top: 2px;
+    }
+    .file-item .start-btn {
+      padding: 0.5rem 1rem;
+      background: linear-gradient(135deg, #38a169 0%, #48bb78 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      flex-shrink: 0;
+      box-shadow: 0 2px 4px rgba(56, 161, 105, 0.3);
+    }
+    .file-item .start-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(56, 161, 105, 0.4);
+    }
+    .file-item .start-btn:active {
+      transform: translateY(0);
+    }
+    .file-item .start-btn i {
+      font-size: 0.75rem;
+    }
+    
+    /* Mode Selection Modal */
+    .mode-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
       padding: 1rem;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+    .mode-modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+    .mode-modal {
+      background: white;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 400px;
+      max-height: 90vh;
+      overflow-y: auto;
+      transform: translateY(20px) scale(0.95);
+      transition: all 0.3s ease;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+    }
+    .mode-modal-overlay.active .mode-modal {
+      transform: translateY(0) scale(1);
+    }
+    .mode-modal-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .mode-modal-header h3 {
+      margin: 0;
+      font-size: 1.1rem;
+      color: #2d3748;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .mode-modal-header .close-modal-btn {
+      width: 32px;
+      height: 32px;
+      border: none;
       background: #f7fafc;
       border-radius: 8px;
       cursor: pointer;
-      transition: all 0.3s;
-      border: 2px solid transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #718096;
+      transition: all 0.2s;
     }
-    .file-item:hover {
+    .mode-modal-header .close-modal-btn:hover {
       background: #e2e8f0;
+      color: #2d3748;
+    }
+    .mode-modal-body {
+      padding: 1.5rem;
+    }
+    .mode-modal-topic {
+      background: #f7fafc;
+      padding: 0.875rem 1rem;
+      border-radius: 10px;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .mode-modal-topic i {
+      color: #2c5282;
+      font-size: 1.1rem;
+    }
+    .mode-modal-topic span {
+      font-weight: 600;
+      color: #2d3748;
+      font-size: 0.95rem;
+    }
+    .mode-modal-options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .mode-modal-option {
+      padding: 1rem 1.25rem;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .mode-modal-option:hover {
       border-color: #2c5282;
+      background: #f7fafc;
     }
-    .file-item.selected {
-      background: #2c5282;
-      color: white;
-      border-color: #1a365d;
+    .mode-modal-option.selected {
+      border-color: #2c5282;
+      background: #ebf4ff;
     }
-    .file-item i {
+    .mode-modal-option .mode-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-size: 1.25rem;
+      flex-shrink: 0;
     }
-    .file-item .file-name {
+    .mode-modal-option.normal-mode .mode-icon {
+      background: linear-gradient(135deg, #3182ce 0%, #63b3ed 100%);
+      color: white;
+    }
+    .mode-modal-option.test-mode .mode-icon {
+      background: linear-gradient(135deg, #d69e2e 0%, #ecc94b 100%);
+      color: white;
+    }
+    .mode-modal-option .mode-content {
       flex: 1;
-      font-weight: 500;
     }
-    .file-item .file-count {
-      font-size: 0.85rem;
-      opacity: 0.8;
+    .mode-modal-option .mode-title {
+      font-weight: 600;
+      font-size: 1rem;
+      color: #2d3748;
+      margin-bottom: 0.25rem;
+    }
+    .mode-modal-option .mode-desc {
+      font-size: 0.8rem;
+      color: #718096;
+      line-height: 1.4;
+    }
+    .mode-modal-option .mode-check {
+      width: 24px;
+      height: 24px;
+      border: 2px solid #cbd5e0;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    .mode-modal-option.selected .mode-check {
+      background: #38a169;
+      border-color: #38a169;
+    }
+    .mode-modal-footer {
+      padding: 1rem 1.5rem 1.5rem;
+    }
+    .mode-modal-start-btn {
+      width: 100%;
+      padding: 0.875rem 1.5rem;
+      background: linear-gradient(135deg, #38a169 0%, #48bb78 100%);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      box-shadow: 0 4px 12px rgba(56, 161, 105, 0.3);
+    }
+    .mode-modal-start-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(56, 161, 105, 0.4);
+    }
+    .mode-modal-start-btn:active {
+      transform: translateY(0);
+    }
+    
+    /* Mobile Responsive for Modal */
+    @media (max-width: 480px) {
+      .mode-modal {
+        max-width: 100%;
+        margin: 0.5rem;
+        border-radius: 12px;
+      }
+      .mode-modal-header {
+        padding: 1rem 1.25rem;
+      }
+      .mode-modal-body {
+        padding: 1.25rem;
+      }
+      .mode-modal-option {
+        padding: 0.875rem 1rem;
+      }
+      .mode-modal-option .mode-icon {
+        width: 42px;
+        height: 42px;
+        font-size: 1.1rem;
+      }
+      .mode-modal-footer {
+        padding: 0.875rem 1.25rem 1.25rem;
+      }
+      .file-item {
+        padding: 0.75rem;
+        gap: 0.6rem;
+      }
+      .file-item .file-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 0.9rem;
+      }
+      .file-item .file-name {
+        font-size: 0.9rem;
+      }
+      .file-item .start-btn {
+        padding: 0.45rem 0.75rem;
+        font-size: 0.8rem;
+      }
+      .file-item .start-btn span {
+        display: none;
+      }
     }
     .start-quiz-btn {
       width: 100%;
@@ -345,30 +615,58 @@
       </div>
       
       <div class="file-selector">
-        <h3><i class="fas fa-file-alt"></i> Select a Quiz File</h3>
+        <h3><i class="fas fa-file-alt"></i> Select a Topic</h3>
         <div class="file-list" id="fileList"></div>
       </div>
-      
-      <!-- Mode Selector -->
-      <div class="mode-selector">
-        <h3><i class="fas fa-cog"></i> Select Quiz Mode</h3>
-        <div class="mode-options">
-          <div class="mode-option selected" data-mode="normal" onclick="selectMode('normal')">
-            <i class="fas fa-book-open"></i>
-            <div class="mode-title">Normal Mode</div>
-            <div class="mode-desc">See answers immediately after each question with explanations</div>
+    </div>
+    
+    <!-- Mode Selection Modal -->
+    <div class="mode-modal-overlay" id="modeModalOverlay" onclick="closeModeModal(event)">
+      <div class="mode-modal" onclick="event.stopPropagation()">
+        <div class="mode-modal-header">
+          <h3><i class="fas fa-play-circle"></i> Start Quiz</h3>
+          <button class="close-modal-btn" onclick="closeModeModal()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="mode-modal-body">
+          <div class="mode-modal-topic">
+            <i class="fas fa-file-alt"></i>
+            <span id="modalTopicName">Topic Name</span>
           </div>
-          <div class="mode-option" data-mode="test" onclick="selectMode('test')">
-            <i class="fas fa-clock"></i>
-            <div class="mode-title">Test Mode</div>
-            <div class="mode-desc">Timed quiz: 1 minute per question. See results only at the end</div>
+          <div class="mode-modal-options">
+            <div class="mode-modal-option normal-mode selected" data-mode="normal" onclick="selectModalMode('normal')">
+              <div class="mode-icon">
+                <i class="fas fa-book-open"></i>
+              </div>
+              <div class="mode-content">
+                <div class="mode-title">Normal Mode</div>
+                <div class="mode-desc">See answers immediately with explanations</div>
+              </div>
+              <div class="mode-check">
+                <i class="fas fa-check"></i>
+              </div>
+            </div>
+            <div class="mode-modal-option test-mode" data-mode="test" onclick="selectModalMode('test')">
+              <div class="mode-icon">
+                <i class="fas fa-clock"></i>
+              </div>
+              <div class="mode-content">
+                <div class="mode-title">Test Mode</div>
+                <div class="mode-desc">Timed quiz (1 min/question). Results at the end</div>
+              </div>
+              <div class="mode-check">
+                <i class="fas fa-check"></i>
+              </div>
+            </div>
           </div>
         </div>
+        <div class="mode-modal-footer">
+          <button class="mode-modal-start-btn" onclick="startQuizFromModal()">
+            <i class="fas fa-play"></i> Start Quiz
+          </button>
+        </div>
       </div>
-      
-      <button class="start-quiz-btn" id="startQuizBtn" onclick="startSelectedQuiz()" disabled>
-        <i class="fas fa-play"></i> Start Quiz
-      </button>
     </div>
     
     <!-- Timer for Test Mode -->
@@ -442,17 +740,6 @@
     let totalTimeSeconds = 0;
     let remainingTimeSeconds = 0;
     let allManifestFiles = []; // For global search
-    
-    // Mode selection
-    function selectMode(mode) {
-      // Cleanup any previous quiz state
-      cleanupQuizState();
-      
-      quizMode = mode;
-      document.querySelectorAll('.mode-option').forEach(el => {
-        el.classList.toggle('selected', el.dataset.mode === mode);
-      });
-    }
     
     // Cleanup function to reset quiz state
     function cleanupQuizState() {
@@ -769,26 +1056,59 @@
       fileList.innerHTML = files.map((file, index) => {
         const displayName = file.name.replace(/.json$/, '').replace(/_/g, ' ');
         return `
-          <div class="file-item" onclick="selectFile(${index})" data-index="${index}">
-            <i class="fas fa-file-alt"></i>
-            <span class="file-name">${displayName}</span>
+          <div class="file-item" data-index="${index}">
+            <div class="file-icon">
+              <i class="fas fa-file-alt"></i>
+            </div>
+            <div class="file-info">
+              <div class="file-name">${displayName}</div>
+              <div class="file-meta">Quiz</div>
+            </div>
+            <button class="start-btn" onclick="openModeModal(${index})">
+              <i class="fas fa-play"></i>
+              <span>Start</span>
+            </button>
           </div>
         `;
       }).join('');
     }
 
-    function selectFile(index) {
+    // Modal Functions
+    function openModeModal(index) {
       selectedFileIndex = index;
+      const file = availableFiles[index];
+      const displayName = file.name.replace(/.json$/, '').replace(/_/g, ' ');
       
-      document.querySelectorAll('.file-item').forEach((item, i) => {
-        item.classList.toggle('selected', i === index);
-      });
+      document.getElementById('modalTopicName').textContent = displayName;
+      document.getElementById('modeModalOverlay').classList.add('active');
       
-      document.getElementById('startQuizBtn').disabled = false;
+      // Reset to normal mode by default
+      selectModalMode('normal');
+      
+      // Prevent body scroll when modal is open
+      document.body.style.overflow = 'hidden';
     }
-
-    async function startSelectedQuiz() {
+    
+    function closeModeModal(event) {
+      // If event exists and target is not the overlay, don't close
+      if (event && event.target !== event.currentTarget) return;
+      
+      document.getElementById('modeModalOverlay').classList.remove('active');
+      document.body.style.overflow = '';
+    }
+    
+    function selectModalMode(mode) {
+      quizMode = mode;
+      document.querySelectorAll('.mode-modal-option').forEach(el => {
+        el.classList.toggle('selected', el.dataset.mode === mode);
+      });
+    }
+    
+    async function startQuizFromModal() {
       if (selectedFileIndex < 0 || !availableFiles[selectedFileIndex]) return;
+      
+      // Close modal
+      closeModeModal();
       
       // Cleanup any previous quiz state before starting
       cleanupQuizState();
