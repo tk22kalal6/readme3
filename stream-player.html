@@ -445,6 +445,8 @@
         const urlParams = new URLSearchParams(window.location.search);
         const streamUrl = urlParams.get('stream') || urlParams.get('url');
         const downloadUrl = urlParams.get('download');
+        const streamUrlX = urlParams.get('streamx');
+        const downloadUrlX = urlParams.get('downloadx');
         const videoTitle = urlParams.get('title') || 'Lecture Video';
         
         // NEW: Get lecture index if provided (helps avoid title matching issues)
@@ -572,13 +574,18 @@
 
         // Handle Watch - S2 button (Server-2 streaming)
         function handleWatchS2() {
-            if (!streamUrl) {
-                alert('Stream URL not available');
+            // Use streamUrlX if available, otherwise fallback to replace logic
+            let s2StreamUrl = streamUrlX;
+            
+            if (!s2StreamUrl && streamUrl) {
+                // Fallback: Replace "web" with "webx" for older JSON files
+                s2StreamUrl = streamUrl.replace('web.afrahtafreeh.site', 'webx.afrahtafreeh.site');
+            }
+            
+            if (!s2StreamUrl) {
+                alert('Server 2 stream URL not available');
                 return;
             }
-
-            // Replace "web" with "webx" for Server-2
-            const s2StreamUrl = streamUrl.replace('web.afrahtafreeh.site', 'webx.afrahtafreeh.site');
             
             // Replace iframe with Server-2 streaming URL
             const iframeContainer = document.getElementById('main-iframe-container');
@@ -593,13 +600,18 @@
 
         // Handle Download - S2 button (Server-2 download)
         function handleDownloadS2() {
-            if (!downloadUrl) {
-                alert('Download URL not available');
+            // Use downloadUrlX if available, otherwise fallback to replace logic
+            let s2DownloadUrl = downloadUrlX;
+            
+            if (!s2DownloadUrl && downloadUrl) {
+                // Fallback: Replace "web" with "webx" for older JSON files
+                s2DownloadUrl = downloadUrl.replace('web.afrahtafreeh.site', 'webx.afrahtafreeh.site');
+            }
+            
+            if (!s2DownloadUrl) {
+                alert('Server 2 download URL not available');
                 return;
             }
-
-            // Replace "web" with "webx" for Server-2
-            const s2DownloadUrl = downloadUrl.replace('web.afrahtafreeh.site', 'webx.afrahtafreeh.site');
             
             // Replace iframe with Server-2 download URL
             const iframeContainer = document.getElementById('main-iframe-container');
@@ -841,6 +853,14 @@
             
             if (lecture.downloadUrl) {
                 params.append('download', lecture.downloadUrl);
+            }
+            
+            // Pass Server 2 URLs (streamingUrlx and downloadUrlx)
+            if (lecture.streamingUrlx) {
+                params.append('streamx', lecture.streamingUrlx);
+            }
+            if (lecture.downloadUrlx) {
+                params.append('downloadx', lecture.downloadUrlx);
             }
             
             window.location.href = `stream-player.html?${params.toString()}`;
