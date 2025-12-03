@@ -525,6 +525,19 @@
         platform: lecture.platform
       });
       
+      // Add download URL if available
+      if (lecture.downloadUrl) {
+        params.append('download', lecture.downloadUrl);
+      }
+      
+      // Add Server 2 URLs if available (streamingUrlx and downloadUrlx)
+      if (lecture.streamingUrlx) {
+        params.append('streamx', lecture.streamingUrlx);
+      }
+      if (lecture.downloadUrlx) {
+        params.append('downloadx', lecture.downloadUrlx);
+      }
+      
       window.location.href = `stream-player.html?${params.toString()}`;
     }
 
