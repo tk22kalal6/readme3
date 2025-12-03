@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -206,24 +205,117 @@
     .download-button:hover {
       background-color: #27ae60;
     }
+    
+    /* Header styles */
+    header {
+      background: linear-gradient(135deg, #3498db, #2c3e50);
+      color: white;
+      padding: 20px 0;
+      margin-bottom: 20px;
+    }
+    
+    .header-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+      text-align: center;
+    }
+    
+    .header-content h1 {
+      margin: 0 0 10px;
+      font-size: 2.2rem;
+    }
+    
+    .header-subtitle {
+      margin: 0 0 20px;
+      font-size: 1.1rem;
+      opacity: 0.9;
+    }
+    
+    .search-bar {
+      max-width: 500px;
+      margin: 0 auto;
+      position: relative;
+    }
+    
+    .search-bar i {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #7f8c8d;
+    }
+    
+    .search-bar input {
+      width: 100%;
+      padding: 12px 15px 12px 45px;
+      border: none;
+      border-radius: 30px;
+      font-size: 1rem;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Main content */
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+    
+    /* Bottom navigation */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: white;
+      display: flex;
+      justify-content: space-around;
+      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+      z-index: 100;
+    }
+    
+    .bottom-nav a {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px;
+      text-decoration: none;
+      color: #7f8c8d;
+      font-size: 0.8rem;
+      transition: color 0.2s;
+    }
+    
+    .bottom-nav a.active {
+      color: #3498db;
+    }
+    
+    .bottom-nav i {
+      font-size: 1.2rem;
+      margin-bottom: 5px;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .header-content h1 {
+        font-size: 1.8rem;
+      }
+      
+      .lecture-card {
+        padding: 15px;
+      }
+      
+      .button-container {
+        flex-direction: column;
+      }
+    }
   </style>
-<script src="../../access-control.js"></script>
-  <script src="../../block.js"></script>
-  <script src="../../error-handler/link-checker.js"></script>
-  <script src="../../stream-player-utils.js"></script>
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5920367457745298"
-     crossorigin="anonymous"></script>
 </head>
 <body>
-<script>
-      // Initialize access control for protected page
-      if (!accessControl.initProtectedPage()) {
-        throw new Error('Access denied - redirecting to index.html');
-      }
-    </script>
   <header>
     <div class="header-content">
-      <button onclick="history.back()" class="back-button" style="display: block;"> <i class="fas fa-arrow-left"></i> </button>
+      <button onclick="history.back()" style="position: fixed; top: 20px; left: 20px; background: transparent; color: white; border: none; padding: 10px; cursor: pointer; z-index: 1001; font-size: 20px;">
+        <i class="fas fa-arrow-left"></i>
       </button>
       <h1>Anatomy Lectures</h1>
       <p class="header-subtitle">Marrow - Expert Faculty</p>
@@ -239,12 +331,12 @@
     </div>
   </main>
   
-<nav class="bottom-nav">
-  <a href="../../app.html" class="active"><i class="fas fa-lightbulb"></i><span>Home</span></a>
-  <a href="../../00x1234.html"><i class="fas fa-play-circle"></i><span>Videos</span></a>
-  <a href="../../search.html"><i class="fas fa-search"></i><span>Search</span></a>
-  <a href="../../quiz/index.html"><i class="fas fa-question-circle"></i><span>Q Bank</span></a>
-</nav>
+  <nav class="bottom-nav">
+    <a href="../../app.html" class="active"><i class="fas fa-lightbulb"></i><span>Home</span></a>
+    <a href="../../00x1234.html"><i class="fas fa-play-circle"></i><span>Videos</span></a>
+    <a href="../../search.html"><i class="fas fa-search"></i><span>Search</span></a>
+    <a href="../../quiz/index.html"><i class="fas fa-question-circle"></i><span>Q Bank</span></a>
+  </nav>
 
   <script>
     let lecturesData = [];
@@ -323,7 +415,7 @@
     async function loadLectures() {
       console.log('Starting to load lectures...');
       try {
-        console.log('Fetching from manaesthesia.json...');
+        console.log('Fetching from cbanatomy.json...');
         const response = await fetch('clinicalguruji.json');
         console.log('Fetch response status:', response.status, response.statusText);
         
@@ -354,23 +446,28 @@
       lecturesData = [
         {
           title: "Introduction to Human Anatomy",
-          streamingUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ"
+          streamingUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+          downloadUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ"
         },
         {
           title: "Basic Anatomical Terminology", 
-          streamingUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ"
+          streamingUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+          downloadUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ"
         },
         {
           title: "Cell Structure and Function",
-          streamingUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ"
+          streamingUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+          downloadUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ"
         },
         {
           title: "Tissue Types and Classification",
-          streamingUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ"
+          streamingUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+          downloadUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ"
         },
         {
           title: "Skeletal System Overview",
-          streamingUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ"
+          streamingUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+          downloadUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ"
         }
       ];
       console.log('Using fallback lectures:', lecturesData.length, 'lectures');
@@ -425,15 +522,12 @@ function escapeHtml(text) {
         
         // Use addEventListener instead of onclick attribute to avoid escaping issues
         openButton.addEventListener('click', function() {
-          // Simply call openStreamPlayer - stream-player-utils.js will automatically:
-          // 1. Extract platform and subject from current page URL (1234xx/test3/clinicalguruji.html)
-          // 2. Build the correct JSON file path (test3/clinicalguruji.json)
-          // 3. Pass the lecture index for next lectures feature
-          // NO HARDCODING NEEDED - works for ALL 1000+ HTML files automatically!
           openStreamPlayer(
             lecture.streamingUrl, 
             lecture.downloadUrl || lecture.streamingUrl, 
-            lecture.title
+            lecture.title,
+            lecture.streamingUrlx,
+            lecture.downloadUrlx
           );
         });
         
@@ -484,8 +578,54 @@ function escapeHtml(text) {
       window.open(downloadUrl, '_blank');
     }
 
-    // Note: openStreamPlayer function is provided by stream-player-utils.js
-    // It will use the PAGE_CONTEXT defined below to pass platform and subject
+    // Function to open the stream player with reCAPTCHA verification
+    function openStreamPlayer(streamUrl, downloadUrl, title, streamUrlX, downloadUrlX) {
+      if (!streamUrl) {
+        alert('Stream URL not available');
+        return;
+      }
+
+      // Sanitize and encode the title properly to handle special characters
+      const sanitizedTitle = (title || 'Lecture Video').trim();
+      
+      // Build the URL with parameters - URLSearchParams automatically encodes special characters
+      const params = new URLSearchParams({
+        stream: streamUrl,
+        title: sanitizedTitle
+      });
+
+      // Add download URL if available
+      if (downloadUrl) {
+        params.append('download', downloadUrl);
+      }
+      
+      // Add Server 2 URLs if available (streamingUrlx and downloadUrlx)
+      if (streamUrlX) {
+        params.append('streamx', streamUrlX);
+      }
+      if (downloadUrlX) {
+        params.append('downloadx', downloadUrlX);
+      }
+
+      // Smart path detection that works for both GitHub Pages (with repo name) and custom domains
+      const currentPath = window.location.pathname;
+      const pathParts = currentPath.split('/').filter(p => p && !p.includes('.html'));
+      
+      // Detect if we're on GitHub Pages without custom domain
+      const isGitHubPages = window.location.hostname.includes('github.io');
+      
+      let streamPlayerUrl;
+      if (isGitHubPages && pathParts.length > 0) {
+        // GitHub Pages without custom domain - include repo name
+        const repoName = pathParts[0];
+        streamPlayerUrl = `/${repoName}/stream-player.html?${params.toString()}`;
+      } else {
+        // Custom domain or root level - use absolute path from root
+        streamPlayerUrl = `/stream-player.html?${params.toString()}`;
+      }
+      
+      window.location.href = streamPlayerUrl;
+    }
 
     // Search functionality
     document.getElementById('searchInput').addEventListener('input', function(e) {
